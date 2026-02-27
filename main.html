@@ -1,19 +1,38 @@
 <!DOCTYPE html>
 <html>
-
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>우리만의 감성 지도</title>
-    <link rel="stylesheet" href="./css/common.css">
-    <script type="text/javascript"
-        src="//dapi.kakao.com/v2/maps/sdk.js?appkey=47bbd47c04e70af1e13f9280c52c609b"></script>
-    <script src="./js/main.js" defer></script>
+    <link rel="stylesheet" href="./test.css">
+    <script type="text/javascript" src="//dapi.kakao.com/v2/maps/sdk.js?appkey=47bbd47c04e70af1e13f9280c52c609b&autoload=false"></script>
+    <script src="./test.js" defer></script>
 </head>
-
 <body>
     <h2 class="map-title">나만의 스팟 지도 📍</h2>
+    
+    <input id="btn" type="button" value="메뉴">
+    <button id="mylocation">현위치</button>
+    <button id="login-open-btn" class="dd-login-btn" onclick="openLogin()">로그인</button>
+
+    <div id="sidebar" class="sidebar">
+        <div class="sidebar-content">
+            <h3>메뉴 목록</h3>
+            </div>
+    </div>
+
+    <div id="dd-overlay" class="dd-overlay">
+        <div class="dd-auth-box">
+            <span class="close-btn" onclick="closeLogin()">&times;</span>
+            <h2>로그인</h2>
+            <form onsubmit="handleLogin(event)">
+                <input type="text" id="input-dd-user-id" placeholder="아이디" required>
+                <input type="password" id="input-dd-password" placeholder="비밀번호" required>
+                <button type="submit">접속</button>
+            </form>
+        </div>
+    </div>
+
     <div id="map"></div>
 </body>
-
 </html>
