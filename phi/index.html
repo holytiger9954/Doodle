@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>PHI · 흡연구역 · 나만의 스팟</title>
+  <link rel="stylesheet" href="./css/phi.css" />
+  <script type="text/javascript"
+    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=47bbd47c04e70af1e13f9280c52c609b&autoload=false"></script>
+  <script src="../js/jquery-3.7.1.js"></script>
+  <script src="./js/phi.js" defer></script>
+  <script src="./js/dd.api.v1.js" defer></script>
+
+  <script defer>
+    $(() => {
+      window.DD.V1.Posts.list({ q: "흡연", minLat: 36.33, maxLat: 36.38, minLng: 127.34, maxLng: 127.41, page: 1, pageSize: 20 }).then(console.log);
+      window.DD.V1.Posts.get(101).then(console.log);
+      window.DD.V1.Posts.create({ authorNo: 1, title: "흡연구역 발견", content: "여기 바람 덜 불어서 좋음", latitude: 36.3504, longitude: 127.3845, tags: ["흡연", "대전", "실내"] }).then(console.log);
+      window.DD.V1.Comments.list(101).then(console.log);
+      window.DD.V1.Comments.add(101, { authorNo: 1, content: "나도 여기 인정", parentCommentNo: null }).then(console.log);
+    });
+  </script>
+</head>
+
+<body>
+  <div id="map-wrap" class="dd-map-wrap">
+    <div id="map"></div>
+
+    <div class="dd-map-ui dd-topbar">
+      <div class="dd-topbar-left">
+        <div class="dd-title">PHI · 흡연구역 · 나만의 스팟</div>
+      </div>
+      <div class="dd-topbar-right">
+        <button id="mylocation" class="dd-btn">현위치</button>
+        <button id="regmode" class="dd-btn dd-btn-primary" aria-pressed="false">등록 모드</button>
+      </div>
+    </div>
+
+    <div class="dd-map-ui dd-rightpanel" aria-label="실시간 랭킹 패널">
+      <div class="dd-card">
+        <div class="dd-card-title">실시간 태그 TOP 10</div>
+        <div class="dd-card-sub">등록된 스팟의 태그로 집계</div>
+        <ol id="tag-top10" class="dd-rank-list">
+          <li class="dd-muted">(아직 태그 없음)</li>
+        </ol>
+      </div>
+      <div class="dd-card">
+        <div class="dd-card-title">사용 팁</div>
+        <ul class="dd-tip">
+          <li>등록 모드 켜고 지도 클릭 → 스팟 등록</li>
+          <li>태그는 <b>#</b> 붙여도 되고, 공백/콤마로 구분</li>
+          <li>마커 클릭 → (다음 단계) 상세/댓글</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</body>
+
+</html>

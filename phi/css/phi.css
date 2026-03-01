@@ -1,0 +1,113 @@
+/* 기본 초기화 */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { width: 100%; height: 100%; overflow: hidden; }
+
+/* 지도 래퍼 */
+.dd-map-wrap{ position: relative; width:100%; height:100vh; }
+
+/* 지도 */
+#map { width: 100%; height: 100%; z-index: 1; }
+
+/* 제목 */
+/* 지도 위 UI 공통 */
+.dd-map-ui{ position:absolute; z-index: 10; pointer-events: none; }
+.dd-map-ui *{ pointer-events: auto; }
+
+.dd-topbar{
+  top: 12px; left: 12px; right: 12px;
+  display:flex; align-items:center; justify-content: space-between;
+}
+.dd-title{
+  color:#fff; font-weight:700; font-size:14px;
+  padding: 10px 12px; border-radius: 14px;
+  background: rgba(10, 14, 22, 0.74);
+  border: 1px solid rgba(255,255,255,0.10);
+  backdrop-filter: blur(10px);
+}
+
+.dd-topbar-right{ display:flex; gap:8px; align-items:center; }
+
+.dd-btn{
+  border: 1px solid rgba(255,255,255,0.14);
+  background: rgba(10,14,22,0.72);
+  color:#fff;
+  padding: 10px 12px;
+  border-radius: 12px;
+  font-size: 13px;
+  cursor:pointer;
+}
+.dd-btn:hover{ background: rgba(10,14,22,0.86); }
+.dd-btn:active{ transform: translateY(1px); }
+.dd-btn-primary{ background: rgba(40,120,255,0.78); border-color: rgba(40,120,255,0.45); }
+.dd-btn-primary:hover{ background: rgba(40,120,255,0.90); }
+.dd-btn-primary[aria-pressed="true"]{ background: rgba(40,200,120,0.78); border-color: rgba(40,200,120,0.45); }
+
+.dd-rightpanel{
+  top: 76px; right: 12px;
+  width: 320px;
+  display:flex; flex-direction: column; gap: 12px;
+}
+
+.dd-card{
+  background: rgba(10, 14, 22, 0.74);
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 16px;
+  padding: 14px;
+  color: #fff;
+  backdrop-filter: blur(10px);
+}
+.dd-card-title{ font-weight:700; font-size: 14px; margin-bottom: 6px; }
+.dd-card-sub{ opacity:0.8; font-size: 12px; margin-bottom: 10px; }
+.dd-rank-list{ list-style: decimal; padding-left: 18px; display:flex; flex-direction:column; gap:6px; }
+.dd-rank-item{ display:flex; align-items:center; justify-content: space-between; gap: 8px; }
+.dd-rank-tag{ font-weight:600; }
+.dd-rank-count{ opacity:0.85; font-variant-numeric: tabular-nums; }
+.dd-muted{ opacity:0.7; }
+.dd-tip{ margin-top: 6px; padding-left: 18px; display:flex; flex-direction:column; gap:6px; font-size:12px; opacity:0.9; }
+
+.dd-hidden{ display:none !important; }
+
+/* 기존 .sidebar 수정 */
+.sidebar {
+    position: absolute; 
+    top: 0; 
+    left: 0; 
+    height: 100%; 
+    width: 300px;           /* 너비는 고정하고 */
+    transform: translateX(-100%); /* 화면 왼쪽 밖으로 밀어두기 */
+    z-index: 999; 
+    transition: 0.5s; 
+    overflow: hidden;
+    background-color: rgba(75, 70, 70, 0.7);
+    /* 열리기 전에는 클릭 방해 금지 */
+    pointer-events: none; 
+}
+
+/* 열렸을 때 상태 */
+.sidebar.-open {
+    transform: translateX(0); /* 다시 화면 안으로 */
+    pointer-events: auto;     /* 사이드바 안의 버튼 등은 클릭 가능하게 */
+}
+
+/* 버튼들 (기존 ID 스타일은 호환만 남김) */
+#btn { position: absolute; top: 15px; left: 15px; z-index: 1000; padding: 5px 10px; }
+
+/* 로그인 오버레이 */
+.dd-overlay {
+    display: none;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 2000;
+    justify-content: center;
+    align-items: center;
+}
+.dd-overlay.-open{ display:flex; }
+.dd-auth-box { background: white; padding: 20px; border-radius: 10px; min-width: 280px; }
+.close-btn { float: right; cursor: pointer; font-size: 20px; }
+
+/* 모바일: 오른쪽 패널 아래로 */
+@media (max-width: 768px){
+  .dd-rightpanel{ left: 12px; right: 12px; width: auto; top: 72px; }
+  .dd-topbar{ flex-direction: column; align-items: stretch; gap: 10px; }
+  .dd-topbar-right{ justify-content: flex-end; flex-wrap: wrap; }
+}
