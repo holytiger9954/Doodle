@@ -4,7 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>우리만의 감성 지도</title>
+    <title>SPOT MAP 📍</title>
+    <link rel="stylesheet" as="style" crossorigin
+        href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
     <link rel="stylesheet" href="./test.css">
     <script type="text/javascript"
         src="//dapi.kakao.com/v2/maps/sdk.js?appkey=47bbd47c04e70af1e13f9280c52c609b&autoload=false"></script>
@@ -12,23 +14,27 @@
 </head>
 
 <body>
-    <h2 class="map-title">나만의 스팟 지도 📍</h2>
+    <header class="main-header">
+        <div class="logo">SPOT MAP 📍</div>
+        <div class="header-search">
+            <input type="text" placeholder="천안역 주변 검색...">
+            <button class="search-btn">🔍</button>
+        </div>
+        <div class="header-icons">
+            <button id="login-open-btn" class="login-trigger-btn" onclick="openLogin()">로그인</button>
+        </div>
+    </header>
 
-    <input id="btn" type="button" value="마이메뉴">
-    <button id="mylocation">현위치</button>
-    <button id="login-open-btn" class="dd-login-btn" onclick="openLogin()">로그인</button>
+    <button id="btn" class="menu-toggle-btn">☰</button>
+    <button id="mylocation">🎯</button>
 
     <div id="sidebar" class="sidebar">
-        <div class="sidebar-content" id="sidebar-content">
-            <h3>마이메뉴</h3>
-            <p>데이터를 불러오는 중...</p>
-        </div>
+        <div class="sidebar-content" id="sidebar-content"></div>
     </div>
 
     <div id="dd-overlay" class="dd-overlay">
         <div class="dd-auth-box">
             <span class="close-btn" onclick="closeLogin()">&times;</span>
-
             <div id="login-section">
                 <h2>로그인</h2>
                 <form onsubmit="handleLogin(event)">
@@ -36,23 +42,9 @@
                     <input type="password" id="input-dd-password" placeholder="비밀번호" required>
                     <button type="submit" class="auth-submit-btn">접속</button>
                 </form>
-                <p class="auth-toggle">아직 회원이 아니신가요? <a href="javascript:void(0)" onclick="toggleAuth(true)">회원가입</a>
-                </p>
-            </div>
-
-            <div id="signup-section" style="display:none;">
-                <h2>회원가입</h2>
-                <form onsubmit="handleSignup(event)">
-                    <input type="text" id="reg-id" placeholder="아이디" required>
-                    <input type="password" id="reg-pw" placeholder="비밀번호" required>
-                    <input type="text" id="reg-nick" placeholder="닉네임" required>
-                    <button type="submit" class="auth-submit-btn">가입하기</button>
-                </form>
-                <p class="auth-toggle">이미 계정이 있나요? <a href="javascript:void(0)" onclick="toggleAuth(false)">로그인</a></p>
             </div>
         </div>
     </div>
-
     <div id="map"></div>
 </body>
 

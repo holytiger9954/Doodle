@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>DB Table Schema Visualization (Oracle v1.1)</title>
+    <style>
+        body { font-family: 'Pretendard', sans-serif; padding: 40px; background-color: #f8f9fa; color: #333; }
+        h1 { color: #2c3e50; border-bottom: 2px solid #2c3e50; padding-bottom: 10px; }
+        h2 { margin-top: 40px; color: #e67e22; font-size: 1.2rem; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        th, td { padding: 12px 15px; border: 1px solid #dee2e6; text-align: left; }
+        th { background-color: #f1f3f5; font-weight: bold; color: #495057; }
+        tr:nth-child(even) { background-color: #f8f9fa; }
+        .pk { color: #d63384; font-weight: bold; font-size: 0.85rem; }
+        .fk { color: #0d6efd; font-weight: bold; font-size: 0.85rem; }
+        .desc { color: #666; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <h1>데이터베이스 설계 명세서 (Oracle v1.1)</h1>
+
+    <h2>1. 사용자 테이블 (dd_users)</h2>
+    <p class="desc">회원 정보 및 관리자 권한 관리</p>
+    <table>
+        <thead>
+            <tr>
+                <th>컬럼명 (Field)</th>
+                <th>데이터 타입</th>
+                <th>제약 조건</th>
+                <th>설명</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>dd_id</td>
+                <td>NUMBER</td>
+                <td><span class="pk">PK</span>, Sequence</td>
+                <td>고유 식별 번호 (nextval)</td>
+            </tr>
+            <tr>
+                <td>dd_user_id</td>
+                <td>VARCHAR2(50)</td>
+                <td>Unique, NN</td>
+                <td>로그인 아이디</td>
+            </tr>
+            <tr>
+                <td>dd_password</td>
+                <td>VARCHAR2(255)</td>
+                <td>NN</td>
+                <td>암호화된 비밀번호</td>
+            </tr>
+            <tr>
+                <td>dd_nickname</td>
+                <td>VARCHAR2(50)</td>
+                <td>NN</td>
+                <td>서비스 내 닉네임</td>
+            </tr>
+            <tr>
+                <td>dd_role</td>
+                <td>VARCHAR2(20)</td>
+                <td>NN</td>
+                <td>권한 구분 (USER, ADMIN)</td>
+            </tr>
+            <tr>
+                <td>dd_created_at</td>
+                <td>DATE</td>
+                <td>Default SYSDATE</td>
+                <td>계정 생성일</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>2. 장소/스팟 테이블 (dd_spots)</h2>
+    <p class="desc">흡연부스, 나만의 스팟, 공중화장실 통합 관리</p>
+    <table>
+        <thead>
+            <tr>
+                <th>컬럼명 (Field)</th>
+                <th>데이터 타입</th>
+                <th>제약 조건</th>
+                <th>설명</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>dd_id</td>
+                <td>NUMBER</td>
+                <td><span class="pk">PK</span>, Sequence</td>
+                <td>고유 식별 번호</td>
+            </tr>
+            <tr>
+                <td>dd_category</td>
+                <td>VARCHAR2(20)</td>
+                <td>NN</td>
+                <td>구분 (smoking, spot, toilet)</td>
+            </tr>
+            <tr>
+                <td>dd_name</td>
+                <td>VARCHAR2(100)</td>
+                <td>NN</td>
+                <td>장소 명칭</td>
+            </tr>
+            <tr>
+                <td>dd_latitude</td>
+                <td>NUMBER</td>
+                <td>NN</td>
+                <td>위도 (Lat)</td>
+            </tr>
+            <tr>
+                <td>dd_longitude</td>
+                <td>NUMBER</td>
+                <td>NN</td>
+                <td>경도 (Lng)</td>
+            </tr>
+            <tr>
+                <td>dd_creator_id</td>
+                <td>NUMBER</td>
+                <td><span class="fk">FK</span> (dd_users.dd_id)</td>
+                <td>등록 유저 ID (공공데이터는 null)</td>
+            </tr>
+            <tr>
+                <td>dd_tags</td>
+                <td>VARCHAR2(500)</td>
+                <td>-</td>
+                <td>해시태그 (#감성 #부스 등)</td>
+            </tr>
+            <tr>
+                <td>dd_is_verified</td>
+                <td>NUMBER(1)</td>
+                <td>Default 0</td>
+                <td>검증 여부 (0:거짓, 1:참)</td>
+            </tr>
+            <tr>
+                <td>dd_created_at</td>
+                <td>DATE</td>
+                <td>Default SYSDATE</td>
+                <td>등록일시</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>3. 신고 테이블 (dd_reports)</h2>
+    <p class="desc">관리자 페이지용 신고 및 처리 현황 관리</p>
+    <table>
+        <thead>
+            <tr>
+                <th>컬럼명 (Field)</th>
+                <th>데이터 타입</th>
+                <th>제약 조건</th>
+                <th>설명</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>dd_id</td>
+                <td>NUMBER</td>
+                <td><span class="pk">PK</span>, Sequence</td>
+                <td>고유 식별 번호</td>
+            </tr>
+            <tr>
+                <td>dd_spot_id</td>
+                <td>NUMBER</td>
+                <td><span class="fk">FK</span> (dd_spots.dd_id)</td>
+                <td>신고 대상 장소</td>
+            </tr>
+            <tr>
+                <td>dd_user_id</td>
+                <td>NUMBER</td>
+                <td><span class="fk">FK</span> (dd_users.dd_id)</td>
+                <td>신고 유저</td>
+            </tr>
+            <tr>
+                <td>dd_content</td>
+                <td>VARCHAR2(1000)</td>
+                <td>NN</td>
+                <td>신고 내용 (예: "장소 없음")</td>
+            </tr>
+            <tr>
+                <td>dd_status</td>
+                <td>VARCHAR2(20)</td>
+                <td>Default 'PENDING'</td>
+                <td>처리 상태 (대기, 완료, 반려)</td>
+            </tr>
+        </tbody>
+    </table>
+
+</body>
+</html>
