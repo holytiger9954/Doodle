@@ -34,7 +34,7 @@ html, body { width: 100%; height: 100%; overflow: hidden; }
 }
 
 /* 버튼들 공통 */   /* 앱솔위치 top->bottom, leftpx수정 */
-#btn { position: absolute; bottom: 35px; left: 180px; z-index: 1000; padding: 5px 10px; }
+#btn { position: absolute; bottom: 35px; left: 165px; z-index: 1000; padding: 5px 10px; }
 #mylocation { position: absolute; bottom: 30px; right: 20px; z-index: 10; padding: 10px; }
 .dd-login-btn { position: absolute; top: 15px; right: 15px; z-index: 10; padding: 5px 10px; }
 

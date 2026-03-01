@@ -10,8 +10,8 @@
 </head>
 <body>
     <h2 class="map-title">나만의 스팟 지도 📍</h2>
-    
-    <input id="btn" type="button" value="메뉴">
+
+    <input id="btn" type="button" value="마이페이지">
     <button id="mylocation">현위치</button>
     <button id="login-open-btn" class="dd-login-btn" onclick="openLogin()">로그인</button>
 
@@ -21,8 +21,10 @@
             <div id="my2" type="button" class="my" >등록한 마크</div>
             <div id="my3" type="button" class="my" >내가단 댓글</div>
         </div>
-        <div id="make"></div>
+        <div id="make"></div> <!-- 사이드바 안에 저장된 배열 담을 박스 -->
     </div>
+    <div id="smokmake" class="sidebar"></div> <!-- 흡연부스 마크 클릭시 나올 사이드바 -->
+    <div id="mymake" class="sidebar"></div> <!-- 등록한 마크 클릭시 나올 사이드바 -->
 
     <div id="dd-overlay" class="dd-overlay">
         <div class="dd-auth-box">
@@ -32,7 +34,7 @@
                 <input type="text" id="input-dd-user-id" placeholder="아이디" required>
                 <input type="password" id="input-dd-password" placeholder="비밀번호" required>
                 <button type="submit">접속</button>
-            </form>
+            </form> 
         </div>
     </div>
 
