@@ -1,0 +1,185 @@
+/* 기본 테마 설정 */
+:root {
+    --main-blue: #1B2B48;
+    --soft-black: #242D3C;
+    --point-orange: #F39C12;
+    --neon-blue: #3498DB;
+    --text-white: #E0E6ED;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Pretendard', sans-serif;
+}
+
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--main-blue);
+}
+
+/* 헤더 스타일 (Glassmorphism 적용) */
+.main-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 65px;
+    background-color: rgba(27, 43, 72, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 25px;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.logo {
+    color: var(--text-white);
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+}
+
+.header-search {
+    display: flex;
+    background: rgba(36, 45, 60, 0.8);
+    border-radius: 25px;
+    padding: 5px 20px;
+    width: 35%;
+    border: 1px solid rgba(52, 152, 219, 0.3);
+}
+
+.header-search input {
+    background: none;
+    border: none;
+    color: white;
+    width: 100%;
+    outline: none;
+    padding: 8px 0;
+}
+
+.search-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 18px;
+}
+
+.login-trigger-btn {
+    background-color: var(--point-orange);
+    color: white;
+    border: none;
+    padding: 8px 22px;
+    border-radius: 20px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+/* 지도 및 버튼 위치 조정 */
+#map {
+    width: 100%;
+    height: 100vh;
+    z-index: 1;
+}
+
+.menu-toggle-btn,
+#mylocation {
+    position: absolute;
+    z-index: 10;
+    width: 45px;
+    height: 45px;
+    background: var(--main-blue);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.menu-toggle-btn {
+    top: 85px;
+    left: 20px;
+    font-size: 20px;
+}
+
+#mylocation {
+    bottom: 40px;
+    right: 20px;
+    font-size: 22px;
+}
+
+/* 사이드바 다크 테마 */
+.sidebar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 320px;
+    transform: translateX(-100%);
+    z-index: 999;
+    transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    background-color: var(--soft-black);
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.sidebar.-open {
+    transform: translateX(0);
+    pointer-events: auto;
+}
+
+.sidebar-content {
+    padding: 90px 25px;
+    color: var(--text-white);
+}
+
+/* 로그인 폼 다크 테마 */
+.dd-overlay {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(4px);
+    z-index: 2000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: none;
+    justify-content: center;
+    align-items: center;
+}
+
+.dd-auth-box {
+    background: var(--soft-black);
+    padding: 45px;
+    border-radius: 20px;
+    width: 380px;
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.dd-auth-box input {
+    background: #1B2B48;
+    border: 1px solid #3e4b61;
+    color: white;
+    padding: 14px;
+    margin: 10px 0;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.auth-submit-btn {
+    background: var(--point-orange);
+    font-weight: bold;
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 15px;
+    cursor: pointer;
+    width: 100%;
+    border: none;
+    color: white;
+}

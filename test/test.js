@@ -1,6 +1,11 @@
+
+
+
+
+
 let map;
 let marker; // 여기서 생성하지 않고 선언만 합니다.
-
+let postflag = false;
 // 1. 카카오 맵 API 로드 보장
 kakao.maps.load(() => {
     const mapbox = document.getElementById('map');
@@ -27,8 +32,32 @@ kakao.maps.load(() => {
     }
 
     // 사이드바 이벤트 연결
-    bindEvents();
+    ddServer();
 });
+
+let smokingBooth = []
+let myMemory = []
+let comment = []
+
+async function ddServer() {
+    try {           //서버에서 응답이 오면 출발
+        const response = await DD.V1.Posts.list();
+        console.log("서버 응답 전체:", response);
+        const posts = response.items; //도착한 데이터 가져오기
+        console.log("실제 사용할 posts 데이터:",posts)
+        if (posts && posts.length > 0) {
+            smokingBooth = posts.filter(p => p.tags.includes('흡연'));//"흡연"만 뽑기
+            myMemory = posts.filter(p => p.tags.includes('내장소'));//"내장소"만 뽑기
+            bindEvents();
+        } else {
+            console.log("데이터 없음")
+            bindEvents();
+        }
+    } catch (err) {
+        console.error("데이터 로드 실패", err)
+        bindEvents();
+    }
+}
 
 // 2. 마커 표시 함수
 function displayMarker(loc) {
@@ -72,29 +101,27 @@ function bindEvents() {
     const mymaker = new kakao.maps.Marker();
 
     //임시 랜덤 좌표
-    function ranLocation() {
-        return { //서울의 위도와 경도 서버에서 받아오면 삭제해도됨
-            lat: Math.random() * (37.6 - 37.4) + 37.4,
-            lng: Math.random() * (127.1 - 126.9) + 126.9
-        }
-    }
+    // function ranLocation() {
+    //     return { //서울의 위도와 경도 서버에서 받아오면 삭제해도됨
+    //         lat: Math.random() * (37.6 - 37.4) + 37.4,
+    //         lng: Math.random() * (127.1 - 126.9) + 126.9
+    //     }
+    // }
 
+    // //임시로 만든 마이페이지 저장된 배열                                     //...전개연산자 함수안의 데이터만 넣어줌
+    // smokingBooth = [ // db의 데이터가 들어가야함 패치                 //...을 안붙히면 함수 자체가 들어감
+    //     { text: "장소1", img: "https://cdn-icons-png.flaticon.com/512/1085/1085388.png", ...ranLocation() },
+    //     { text: "장소2", img: "https://cdn-icons-png.flaticon.com/512/1085/1085388.png", ...ranLocation() },
+    //     { text: "장소3", img: "https://cdn-icons-png.flaticon.com/512/1085/1085388.png", ...ranLocation() }
+    // ];
+    // myMemory = [
+    //     { text: "등록1", img: "화면 캡처 2026-02-28 170902.png", ...ranLocation() },
+    //     { text: "등록2", img: "화면 캡처 2026-02-28 170902.png", ...ranLocation() },
+    //     { text: "등록3", img: "화면 캡처 2026-02-28 170902.png", ...ranLocation() }
+    // ];
+    // comment = [
 
-
-    //임시로 만든 마이페이지 저장된 배열                                     //...전개연산자 함수안의 데이터만 넣어줌
-    const smokingBooth = [ // db의 데이터가 들어가야함 패치                 //...을 안붙히면 함수 자체가 들어감
-        { text: "장소1", img: "https://cdn-icons-png.flaticon.com/512/1085/1085388.png", ...ranLocation() },
-        { text: "장소2", img: "https://cdn-icons-png.flaticon.com/512/1085/1085388.png", ...ranLocation() },
-        { text: "장소3", img: "https://cdn-icons-png.flaticon.com/512/1085/1085388.png", ...ranLocation() }
-    ];
-    const myMemory = [
-        { text: "등록1", img: "화면 캡처 2026-02-28 170902.png", ...ranLocation() },
-        { text: "등록2", img: "화면 캡처 2026-02-28 170902.png", ...ranLocation() },
-        { text: "등록3", img: "화면 캡처 2026-02-28 170902.png", ...ranLocation() }
-    ];
-    const comment = [
-
-    ];
+    // ];
 
     const my = document.querySelectorAll('.my') //버튼들
     const make = document.querySelector('#make')//생성될 박스 부모 역할
@@ -121,7 +148,7 @@ function bindEvents() {
                 box.className = 'box'//정보를 보여줄 박스들
                 box.innerHTML = `
                     <img src = "${item.img}">
-                    <p>${item.text}</p>
+                    <p>${item.title}</p>
                 `;//정보담긴 박스의 이미지와 텍스트 표시
                 //box클릭이벤트
                 //box는 me의 이벤트를 발생시켯을때만 발생하기에 me이벤트 안에서 행해야함
@@ -129,7 +156,7 @@ function bindEvents() {
                     // btn.style.display='block' 버튼생성
                     sidebar.classList.remove('-open');//사이드바 내리기
                     sidebarFlag = true;//사이드바 내린상태의 플래그 만들기
-                    const move = new kakao.maps.LatLng(item.lat, item.lng);
+                    const move = new kakao.maps.LatLng(item.latitude, item.longitude);
                     if (index === 0) {
                         smokmaker.setPosition(move),
                             smokmaker.setMap(map),
@@ -148,13 +175,51 @@ function bindEvents() {
     })
 
     const smokmake = document.querySelector('#smokmake')
-    const mymake = document.querySelector('#mymake')
+    const mymake = document.querySelector('#mymake') //지도 마크 클릭 이벤트
     kakao.maps.event.addListener(smokmaker, 'click', function () {
-        smokmake.classList.add('-open')
-    })
+        smokmake.classList.add('-open') //닫을 방법 구상해야함 x는 짜침
+    }) // 마크 사이드바
     kakao.maps.event.addListener(mymaker, 'click', function () {
-        smokmake.classList.add('-open')
+        mymake.classList.add('-open')
     })
+
+    // 장소 등록 이벤트
+    const save = document.querySelector('#savebtn')
+    save.addEventListener('click', function () {
+        postflag = true
+        save.value = "등록중"
+        alert("등록할 좌표를 지정해주세요")
+    })
+    kakao.maps.event.addListener(map, 'click', function (saveEvent) {
+        if (postflag) {
+            const saveside = document.querySelector('#saveside')
+            const savelat = saveEvent.latLng.getLat();//카카오맵 위도 경도 따기
+            const savelng = saveEvent.latLng.getLng();
+
+            document.querySelector("#savelat").value = savelat
+            document.querySelector("#savelng").value = savelng
+
+            saveside.classList.add('-open')
+            postflag = false;
+        }
+    })
+    const saveend = document.querySelector('#saveend')
+    saveend.addEventListener('click', async function () {
+        const savedata = {
+            authorNo: 1,
+            title: document.querySelector('#category').value,
+            content: document.querySelector('#hash').value || "",
+            latitude: Number(document.querySelector('#savelat').value),
+            longitude: Number(document.querySelector('#savelng').value),
+            tags: [document.querySelector('#category').value]
+        }
+
+        await DD.V1.Posts.create(savedata)
+        alert("등록이 완료되었습니다")
+        location.reload()//새로고침
+
+    })
+
 
 
     //////////////////////////////////////////////////////////////////////////////////////
