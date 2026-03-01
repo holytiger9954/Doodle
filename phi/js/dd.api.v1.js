@@ -30,10 +30,53 @@
     return q ? (u + "?" + q) : u;
   };
 
+  /**
+   * DD.V1.ajax
+   * - 404는 "없는 리소스"로 보고 실패로 처리하지 않는다.
+   *   => resolve({ ok:false, code:'NOT_FOUND', message, status:404, url })
+   * - 나머지(500 등)는 기존처럼 fail로 둔다.
+   *
+   * EN:
+   * - Treat 404 as a normal "not found" result (resolve), not a failure.
+   * - Keep other errors (e.g., 500) as failures (reject).
+   */
   DD.V1.ajax = (opt) => {
     const o = Object.assign({ method:"GET", dataType:"json", timeout:15000 }, opt);
-    if (o.json != null) { o.contentType="application/json; charset=utf-8"; o.data=JSON.stringify(o.json); delete o.json; }
-    return $.ajax(o);
+
+    if (o.json != null) {
+      o.contentType = "application/json; charset=utf-8";
+      o.data = JSON.stringify(o.json);
+      delete o.json;
+    }
+
+    // 원본 $.ajax 실행
+    const req = $.ajax(o);
+
+    // ✅ 404를 정상 결과로 변환(resolve)
+    return req.then(
+      (data) => data,
+      (xhr /*, textStatus, errorThrown */) => {
+        const status = Number(xhr && xhr.status);
+
+        // 404: 없는 글/없는 리소스 => UI에서 "없는 글"로 표시하면 됨
+        if (status === 404) {
+          const msg =
+            (xhr.responseJSON && xhr.responseJSON.message) ||
+            "삭제되었거나 존재하지 않는 항목입니다.";
+
+          return {
+            ok: false,
+            code: (xhr.responseJSON && xhr.responseJSON.code) || "NOT_FOUND",
+            message: msg,
+            status: 404,
+            url: o.url
+          };
+        }
+
+        // 나머지: 진짜 에러는 그대로 reject
+        return $.Deferred().reject(xhr).promise();
+      }
+    );
   };
 
   const normTags = (tags) => Array.isArray(tags) ? tags.map(String).map(s=>s.trim()).filter(Boolean) : (typeof tags==="string" ? tags : []);
