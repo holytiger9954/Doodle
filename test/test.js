@@ -39,10 +39,12 @@ let smokingBooth = []
 let myMemory = []
 let comment = []
 
+////////////////////////////////////////////////////////////////////////////////////
 async function ddServer() {
     try {           //서버에서 응답이 오면 출발
         const response = await DD.V1.Posts.list();
         console.log("서버 응답 전체:", response);
+                    // 밑에서 items써서 변수일 뿐
         const posts = response.items; //도착한 데이터 가져오기
         console.log("실제 사용할 posts 데이터:",posts)
         if (posts && posts.length > 0) {
@@ -58,7 +60,7 @@ async function ddServer() {
         bindEvents();
     }
 }
-
+////////////////////////////////////////////////////////////////////////////////////
 // 2. 마커 표시 함수
 function displayMarker(loc) {
     if (marker) {
@@ -156,11 +158,12 @@ function bindEvents() {
                     // btn.style.display='block' 버튼생성
                     sidebar.classList.remove('-open');//사이드바 내리기
                     sidebarFlag = true;//사이드바 내린상태의 플래그 만들기
+                    //item에 담긴 위도 경도
                     const move = new kakao.maps.LatLng(item.latitude, item.longitude);
-                    if (index === 0) {
+                    if (index === 0) {// 흡연마크 좌표이동
                         smokmaker.setPosition(move),
-                            smokmaker.setMap(map),
-                            smokmaker.setImage(smokmakerimg)
+                            smokmaker.setMap(map),//마크 맵에 표시
+                            smokmaker.setImage(smokmakerimg)//마크이미지
 
                     } else if (index === 1) {
                         mymaker.setPosition(move),
@@ -186,12 +189,13 @@ function bindEvents() {
     // 장소 등록 이벤트
     const save = document.querySelector('#savebtn')
     save.addEventListener('click', function () {
-        postflag = true
+        postflag = true //클릭이벤트 안에 클릭이벤트를 넣으면 중첩이벤트발생 될수있어서
+                        // 이벤트 분리하고 연결지을 플래그
         save.value = "등록중"
         alert("등록할 좌표를 지정해주세요")
     })
     kakao.maps.event.addListener(map, 'click', function (saveEvent) {
-        if (postflag) {
+        if (postflag) { //클릭을해서 플래그가 트루가 되면
             const saveside = document.querySelector('#saveside')
             const savelat = saveEvent.latLng.getLat();//카카오맵 위도 경도 따기
             const savelng = saveEvent.latLng.getLng();
@@ -199,15 +203,15 @@ function bindEvents() {
             document.querySelector("#savelat").value = savelat
             document.querySelector("#savelng").value = savelng
 
-            saveside.classList.add('-open')
-            postflag = false;
+            saveside.classList.add('-open') //사이드바 열기
+            postflag = false;// 플래그 초기화
         }
     })
     const saveend = document.querySelector('#saveend')
     saveend.addEventListener('click', async function () {
-        const savedata = {
-            authorNo: 1,
-            title: document.querySelector('#category').value,
+        const savedata = { //서버에 보낼 데이터 양식
+            authorNo: 1,   
+            title: document.querySelector('#hash').value,
             content: document.querySelector('#hash').value || "",
             latitude: Number(document.querySelector('#savelat').value),
             longitude: Number(document.querySelector('#savelng').value),
