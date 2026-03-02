@@ -92,6 +92,9 @@ function bindEvents() {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
+   
+    
+    
     //임시로 넣을 저장된 마크 //김민권
 
     // 저장한 장소에 찍히는 마크
@@ -187,6 +190,16 @@ function bindEvents() {
     })
 
     // 장소 등록 이벤트
+    const saveside = document.querySelector('#saveside')
+    
+    // 등록 사이드 바 닫기 버튼
+    const saveclose = document.querySelector('#saveclose');
+    saveclose.addEventListener('click',function(){
+        saveside.classList.remove('-open')
+        postflag = false;
+        savebtn.value = "등록"
+    })
+
     const save = document.querySelector('#savebtn')
     save.addEventListener('click', function () {
         postflag = true //클릭이벤트 안에 클릭이벤트를 넣으면 중첩이벤트발생 될수있어서
@@ -196,7 +209,7 @@ function bindEvents() {
     })
     kakao.maps.event.addListener(map, 'click', function (saveEvent) {
         if (postflag) { //클릭을해서 플래그가 트루가 되면
-            const saveside = document.querySelector('#saveside')
+           
             const savelat = saveEvent.latLng.getLat();//카카오맵 위도 경도 따기
             const savelng = saveEvent.latLng.getLng();
 
@@ -207,6 +220,7 @@ function bindEvents() {
             postflag = false;// 플래그 초기화
         }
     })
+    //최종등록확정
     const saveend = document.querySelector('#saveend')
     saveend.addEventListener('click', async function () {
         const savedata = { //서버에 보낼 데이터 양식
@@ -224,7 +238,27 @@ function bindEvents() {
 
     })
 
-
+    //정보 뿌리기
+    const smokdata = document.querySelector('#smokdata')
+    smokdata.addEventListener('click',function(){
+        smokingBooth.forEach(function(item){//받아온 데이터
+            const opensmok = new kakao.maps.LatLng(item.latitude,item.longitude);//받아온 데이터의 위도 경도
+            const opensmoking = new kakao.maps.Marker()//마크객체
+                opensmoking.setPosition(opensmok);
+                opensmoking.setMap(map);
+                opensmoking.setImage(smokmakerimg)//담배이미지
+        })
+    }) 
+    const mydata = document.querySelector('#mydata')
+    mydata.addEventListener('click',function(){
+        myMemory.forEach(function(item){
+            const openmy = new kakao.maps.LatLng(item.latitude,item.longitude);
+            const openmy1 = new kakao.maps.Marker()
+                openmy1.setPosition(openmy);
+                openmy1.setMap(map);
+                openmy1.setImage(mymakerimg)
+        })
+    }) 
 
     //////////////////////////////////////////////////////////////////////////////////////
     // [내 위치 찾기]
