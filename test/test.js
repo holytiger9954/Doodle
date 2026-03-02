@@ -44,9 +44,9 @@ async function ddServer() {
     try {           //서버에서 응답이 오면 출발
         const response = await DD.V1.Posts.list();
         console.log("서버 응답 전체:", response);
-                    // 밑에서 items써서 변수일 뿐
+        // 밑에서 items써서 변수일 뿐
         const posts = response.items; //도착한 데이터 가져오기
-        console.log("실제 사용할 posts 데이터:",posts)
+        console.log("실제 사용할 posts 데이터:", posts)
         if (posts && posts.length > 0) {
             smokingBooth = posts.filter(p => p.tags.includes('흡연'));//"흡연"만 뽑기
             myMemory = posts.filter(p => p.tags.includes('내장소'));//"내장소"만 뽑기
@@ -92,9 +92,9 @@ function bindEvents() {
     }
 
     //////////////////////////////////////////////////////////////////////////////////////
-   
-    
-    
+
+
+
     //임시로 넣을 저장된 마크 //김민권
 
     // 저장한 장소에 찍히는 마크
@@ -191,10 +191,10 @@ function bindEvents() {
 
     // 장소 등록 이벤트
     const saveside = document.querySelector('#saveside')
-    
+
     // 등록 사이드 바 닫기 버튼
     const saveclose = document.querySelector('#saveclose');
-    saveclose.addEventListener('click',function(){
+    saveclose.addEventListener('click', function () {
         saveside.classList.remove('-open')
         postflag = false;
         savebtn.value = "등록"
@@ -203,13 +203,13 @@ function bindEvents() {
     const save = document.querySelector('#savebtn')
     save.addEventListener('click', function () {
         postflag = true //클릭이벤트 안에 클릭이벤트를 넣으면 중첩이벤트발생 될수있어서
-                        // 이벤트 분리하고 연결지을 플래그
+        // 이벤트 분리하고 연결지을 플래그
         save.value = "등록중"
         alert("등록할 좌표를 지정해주세요")
     })
     kakao.maps.event.addListener(map, 'click', function (saveEvent) {
         if (postflag) { //클릭을해서 플래그가 트루가 되면
-           
+
             const savelat = saveEvent.latLng.getLat();//카카오맵 위도 경도 따기
             const savelng = saveEvent.latLng.getLng();
 
@@ -224,7 +224,7 @@ function bindEvents() {
     const saveend = document.querySelector('#saveend')
     saveend.addEventListener('click', async function () {
         const savedata = { //서버에 보낼 데이터 양식
-            authorNo: 1,   
+            authorNo: 1,
             title: document.querySelector('#hash').value,
             content: document.querySelector('#hash').value || "",
             latitude: Number(document.querySelector('#savelat').value),
@@ -238,27 +238,57 @@ function bindEvents() {
 
     })
 
+    let smokemakers = [] //마크 배열
+    let mymakers = []
+
+    function clearMarkers(markerArray) { //마크 초기화 함수
+        markerArray.forEach(function (clear) {
+            clear.setMap(null);
+        })
+        markerArray.length = 0;
+    }
+
     //정보 뿌리기
+    let smokmakerflag = false;
     const smokdata = document.querySelector('#smokdata')
-    smokdata.addEventListener('click',function(){
-        smokingBooth.forEach(function(item){//받아온 데이터
-            const opensmok = new kakao.maps.LatLng(item.latitude,item.longitude);//받아온 데이터의 위도 경도
-            const opensmoking = new kakao.maps.Marker()//마크객체
+    smokdata.addEventListener('click', function () {
+        if (!smokmakerflag) {
+            clearMarkers(mymakers)
+            clearMarkers(smokemakers)
+            smokingBooth.forEach(function (item) {//받아온 데이터
+                const opensmok = new kakao.maps.LatLng(item.latitude, item.longitude);//받아온 데이터의 위도 경도
+                const opensmoking = new kakao.maps.Marker()//마크객체
                 opensmoking.setPosition(opensmok);
                 opensmoking.setMap(map);
                 opensmoking.setImage(smokmakerimg)//담배이미지
-        })
-    }) 
+                smokemakers.push(opensmoking)
+                smokmakerflag = true;
+            })
+        } else {
+            clearMarkers(smokemakers)
+            smokmakerflag = false;
+        }
+    })
+    mymarkersflag = false;
     const mydata = document.querySelector('#mydata')
-    mydata.addEventListener('click',function(){
-        myMemory.forEach(function(item){
-            const openmy = new kakao.maps.LatLng(item.latitude,item.longitude);
-            const openmy1 = new kakao.maps.Marker()
+    mydata.addEventListener('click', function () {
+        if (!mymarkersflag) {
+            clearMarkers(mymakers)
+            clearMarkers(smokemakers)
+            myMemory.forEach(function (item) {
+                const openmy = new kakao.maps.LatLng(item.latitude, item.longitude);
+                const openmy1 = new kakao.maps.Marker()
                 openmy1.setPosition(openmy);
                 openmy1.setMap(map);
                 openmy1.setImage(mymakerimg)
-        })
-    }) 
+                mymakers.push(openmy1)
+                mymarkersflag = true;
+            })
+        } else {
+            clearMarkers(mymakers)
+            mymarkersflag = false;
+        }
+    })
 
     //////////////////////////////////////////////////////////////////////////////////////
     // [내 위치 찾기]
