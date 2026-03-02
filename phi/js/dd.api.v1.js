@@ -61,6 +61,11 @@
     // (옵션) category, verified는 서버 구현에 따라 지원될 수 있음
     DD_TAGS_TOP: "/dd/tags/top",
 
+    // DD Auth
+    DD_AUTH_CHECK_LOGIN_ID: "/dd/auth/check-login-id",
+    DD_AUTH_SIGNUP: "/dd/auth/signup",
+    DD_AUTH_LOGIN: "/dd/auth/login",
+
     /* ===========================
      * TB_ group (user features)
      * Base: /api/v1
@@ -197,6 +202,38 @@
   // =========================================================
 
   // ---------- DD ----------
+
+  // DD Auth (same call style as others)
+  DD.V1.DD = DD.V1.DD || {};
+  DD.V1.DD.Auth = {
+    // GET /dd/auth/check-login-id?loginId=...
+    checkLoginId: (query) => DD.V1.ajax({
+      url: DD.V1.url(DD.V1.API.DD_AUTH_CHECK_LOGIN_ID, null, query || {})
+    }),
+
+    // POST /dd/auth/signup
+    signup: (body) => DD.V1.ajax({
+      method: "POST",
+      url: DD.V1.url(DD.V1.API.DD_AUTH_SIGNUP),
+      json: {
+        loginId: String(body?.loginId || "").trim(),
+        password: String(body?.password || ""),
+        nickname: String(body?.nickname || "").trim(),
+        email: body?.email == null ? undefined : String(body.email).trim()
+      }
+    }),
+
+    // POST /dd/auth/login
+    login: (body) => DD.V1.ajax({
+      method: "POST",
+      url: DD.V1.url(DD.V1.API.DD_AUTH_LOGIN),
+      json: {
+        loginId: String(body?.loginId || "").trim(),
+        password: String(body?.password || "")
+      }
+    }),
+  };
+
   const normTags = (tags) =>
     Array.isArray(tags)
       ? tags.map(String).map(s => s.trim()).filter(Boolean)

@@ -66,9 +66,9 @@
       // 실행 토글 (필요한 것만 true)
       // =========================================================
       const RUN = {
-        DD: { postsFlow: true, tagsTop10: true, auth: false }, // ✅ 추가 (기본 false)
+        DD: { postsFlow: true, tagsTop10: true, auth: true }, // ✅ 추가 (기본 false)
         TB: { lodgingChain: false, searchLog: false, wishlist: false }, // wishlist는 memberId 실제값 필요해서 기본 OFF
-        SJ: { auth: true, postsAndComments: true }
+        SJ: { auth: false, postsAndComments: false }
       };
 
       // =========================================================
@@ -89,57 +89,38 @@
 
 
       // =========================================================
-      // DD Auth: jQuery ajax helper (added)
-      // - Avoid relying on dd.api.v1.js having Auth namespace
-      // - Keeps existing code intact and adds DD auth only
-      // =========================================================
-      const ddAjax = (method, url, data) => {
-        return $.ajax({
-          method,
-          url,
-          data: data ? JSON.stringify(data) : undefined,
-          contentType: data ? "application/json; charset=utf-8" : undefined,
-          dataType: "json"
-        });
-      };
-
-      // =========================================================
-      // DD-AUTH-1~3) 중복체크 -> 회원가입(없을때만) -> 로그인 (added)
-      // Base: /api/v1/dd
+      // DD Auth (DD.V1 style)
+      // - DD.V1.DD.Auth.checkLoginId / signup / login
       // =========================================================
       const ddRunAuth = async () => {
-        const DD_ID = "dd_test11";
+        const DD_ID = "dd_test12321";
         const DD_PW = "admin1234";
         const DD_NICK = "DD테스트유저";
 
         // DD-AUTH-1) 중복 체크
         const checkQ = { loginId: DD_ID };
-        const checkUrl = `/api/v1/dd/auth/check-login-id?${new URLSearchParams(checkQ).toString()}`;
+        const checkUrl = DD.V1.url(DD.V1.API.DD_AUTH_CHECK_LOGIN_ID, null, checkQ);
         logCall("DD-AUTH-1 CHECK_LOGIN_ID", "GET", checkUrl);
 
         let checkRes;
         try {
-          checkRes = await ddAjax("GET", checkUrl);
+          checkRes = await DD.V1.DD.Auth.checkLoginId(checkQ);
           logRes("DD-AUTH-1 CHECK_LOGIN_ID", checkRes);
         } catch (e) {
           logErr("DD-AUTH-1 CHECK_LOGIN_ID", e);
           return;
         }
 
-        // 서버 응답 형태가 다를 수 있어서 최대한 방어적으로
-        const exists =
-          !!checkRes?.exists ||
-          !!checkRes?.data?.exists ||
-          checkRes?.ok === true && checkRes?.exists === true;
+        const exists = !!(checkRes?.data?.exists ?? checkRes?.exists ?? checkRes?.item?.exists);
 
         // DD-AUTH-2) 회원가입 (없을 때만)
         if (!exists) {
           const signupBody = { loginId: DD_ID, password: DD_PW, nickname: DD_NICK };
-          const signupUrl = `/api/v1/dd/auth/signup`;
+          const signupUrl = DD.V1.url(DD.V1.API.DD_AUTH_SIGNUP);
           logCall("DD-AUTH-2 SIGNUP", "POST", signupUrl, signupBody);
 
           try {
-            const signupRes = await ddAjax("POST", signupUrl, signupBody);
+            const signupRes = await DD.V1.DD.Auth.signup(signupBody);
             logRes("DD-AUTH-2 SIGNUP", signupRes);
           } catch (e) {
             logErr("DD-AUTH-2 SIGNUP", e);
@@ -151,11 +132,11 @@
 
         // DD-AUTH-3) 로그인
         const loginBody = { loginId: DD_ID, password: DD_PW };
-        const loginUrl = `/api/v1/dd/auth/login`;
+        const loginUrl = DD.V1.url(DD.V1.API.DD_AUTH_LOGIN);
         logCall("DD-AUTH-3 LOGIN", "POST", loginUrl, loginBody);
 
         try {
-          const loginRes = await ddAjax("POST", loginUrl, loginBody);
+          const loginRes = await DD.V1.DD.Auth.login(loginBody);
           logRes("DD-AUTH-3 LOGIN", loginRes);
         } catch (e) {
           logErr("DD-AUTH-3 LOGIN", e);
