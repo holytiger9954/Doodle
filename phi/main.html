@@ -32,6 +32,9 @@
        * DD-4) GET  /dd/posts/:postNo/comments        // 댓글 목록
        * DD-5) POST /dd/posts/:postNo/comments        // 댓글/대댓글 등록
        * DD-6) GET  /dd/tags/top?limit&days           // 실시간 태그 TOP10
+       * * DD-AUTH-1) GET  /dd/auth/check-login-id          // 아이디 중복
+       * DD-AUTH-2) POST /dd/auth/signup                  // 회원가입
+       * DD-AUTH-3) POST /dd/auth/login                   // 로그인
        *
        * [TB 그룹 = LODG 포함] base: /api/v1 (숙소/유저기능)
        * TB-LOD-1) GET  /lodging/properties               // 숙소 리스트/검색/필터
@@ -63,9 +66,9 @@
       // 실행 토글 (필요한 것만 true)
       // =========================================================
       const RUN = {
-        DD: { postsFlow: false, tagsTop10: false },
-        TB: { lodgingChain: true, searchLog: true, wishlist: true }, // wishlist는 memberId 실제값 필요해서 기본 OFF
-        SJ: { auth: false, postsAndComments: false }
+        DD: { postsFlow: true, tagsTop10: true, auth: false }, // ✅ 추가 (기본 false)
+        TB: { lodgingChain: false, searchLog: false, wishlist: false }, // wishlist는 memberId 실제값 필요해서 기본 OFF
+        SJ: { auth: true, postsAndComments: true }
       };
 
       // =========================================================
@@ -82,6 +85,82 @@
         const status = xhr?.status;
         const msg = rj?.message || rj?.error || xhr?.statusText || "요청 실패";
         console.log(`[ERR] ${label} :: status=${status}`, rj || msg);
+      };
+
+
+      // =========================================================
+      // DD Auth: jQuery ajax helper (added)
+      // - Avoid relying on dd.api.v1.js having Auth namespace
+      // - Keeps existing code intact and adds DD auth only
+      // =========================================================
+      const ddAjax = (method, url, data) => {
+        return $.ajax({
+          method,
+          url,
+          data: data ? JSON.stringify(data) : undefined,
+          contentType: data ? "application/json; charset=utf-8" : undefined,
+          dataType: "json"
+        });
+      };
+
+      // =========================================================
+      // DD-AUTH-1~3) 중복체크 -> 회원가입(없을때만) -> 로그인 (added)
+      // Base: /api/v1/dd
+      // =========================================================
+      const ddRunAuth = async () => {
+        const DD_ID = "dd_test11";
+        const DD_PW = "admin1234";
+        const DD_NICK = "DD테스트유저";
+
+        // DD-AUTH-1) 중복 체크
+        const checkQ = { loginId: DD_ID };
+        const checkUrl = `/api/v1/dd/auth/check-login-id?${new URLSearchParams(checkQ).toString()}`;
+        logCall("DD-AUTH-1 CHECK_LOGIN_ID", "GET", checkUrl);
+
+        let checkRes;
+        try {
+          checkRes = await ddAjax("GET", checkUrl);
+          logRes("DD-AUTH-1 CHECK_LOGIN_ID", checkRes);
+        } catch (e) {
+          logErr("DD-AUTH-1 CHECK_LOGIN_ID", e);
+          return;
+        }
+
+        // 서버 응답 형태가 다를 수 있어서 최대한 방어적으로
+        const exists =
+          !!checkRes?.exists ||
+          !!checkRes?.data?.exists ||
+          checkRes?.ok === true && checkRes?.exists === true;
+
+        // DD-AUTH-2) 회원가입 (없을 때만)
+        if (!exists) {
+          const signupBody = { loginId: DD_ID, password: DD_PW, nickname: DD_NICK };
+          const signupUrl = `/api/v1/dd/auth/signup`;
+          logCall("DD-AUTH-2 SIGNUP", "POST", signupUrl, signupBody);
+
+          try {
+            const signupRes = await ddAjax("POST", signupUrl, signupBody);
+            logRes("DD-AUTH-2 SIGNUP", signupRes);
+          } catch (e) {
+            logErr("DD-AUTH-2 SIGNUP", e);
+            return;
+          }
+        } else {
+          console.log("[SKIP] DD-AUTH-2 SIGNUP: already exists");
+        }
+
+        // DD-AUTH-3) 로그인
+        const loginBody = { loginId: DD_ID, password: DD_PW };
+        const loginUrl = `/api/v1/dd/auth/login`;
+        logCall("DD-AUTH-3 LOGIN", "POST", loginUrl, loginBody);
+
+        try {
+          const loginRes = await ddAjax("POST", loginUrl, loginBody);
+          logRes("DD-AUTH-3 LOGIN", loginRes);
+        } catch (e) {
+          logErr("DD-AUTH-3 LOGIN", e);
+          return;
+        }
       };
 
       // =========================================================
@@ -399,6 +478,11 @@
           logCall("DD-6 DD_TAGS_TOP", "GET", url);
           DD.V1.Tags.top(q).then(res => { logRes("DD-6 DD_TAGS_TOP", res); renderTagTop10(res); }).catch(e => logErr("DD-6 DD_TAGS_TOP", e));
         }
+        
+        if (RUN.DD.auth) {
+          await ddRunAuth(); // ✅ added
+        }
+        
 
         if (RUN.DD.postsFlow) {
           await ddRunPostsFlow();
