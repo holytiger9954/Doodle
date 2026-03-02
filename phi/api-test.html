@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>API Test · DD / LODG(TB) / SJ</title>
+  <link rel="stylesheet" href="./css/phi.css" />
+  <script src="../js/jquery-3.7.1.js"></script>
+  <script src="./js/dd.api.v1.js"></script>
+  <script src="./js/api-test.js" defer></script>
+  <style>
+    .dd-test-wrap{max-width:980px;margin:0 auto;padding:16px;}
+    .dd-test-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0;}
+    .dd-test-row .dd-btn{min-width:140px;}
+    #log{white-space:pre-wrap;background:rgba(0,0,0,0.55);border:1px solid rgba(255,255,255,0.15);border-radius:12px;padding:12px;min-height:240px;}
+    .dd-muted{opacity:.75}
+    input.dd-input{padding:10px 12px;border-radius:10px;border:1px solid rgba(255,255,255,.2);background:rgba(0,0,0,.35);color:#fff;min-width:220px;}
+  </style>
+</head>
+<body>
+  <div class="dd-test-wrap">
+    <div class="dd-title">API Test Console</div>
+    <div class="dd-muted">DD / LODG(TB) / SJ 를 <b>UI 없이</b> 저장까지 포함해 호출 테스트</div>
+
+    <div class="dd-test-row">
+      <input id="baseUri" class="dd-input" placeholder="BASE URI (e.g. http://116.36.205.25:15180)" />
+      <button class="dd-btn" id="applyBase">BASE 적용</button>
+      <button class="dd-btn" id="clearLog">로그 지우기</button>
+    </div>
+
+    <div class="dd-test-row">
+      <button class="dd-btn dd-btn-primary" id="runDD">DD 저장/조회 테스트</button>
+      <button class="dd-btn dd-btn-primary" id="runLODG">LODG 숙소 조회 테스트</button>
+      <button class="dd-btn dd-btn-primary" id="runTB">TB(검색로그/찜) 저장/조회 테스트</button>
+      <button class="dd-btn dd-btn-primary" id="runSJ">SJ 회원/글/댓글 저장/조회 테스트</button>
+    </div>
+
+    <div id="log"></div>
+  </div>
+</body>
+</html>

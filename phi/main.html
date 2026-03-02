@@ -4,13 +4,11 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>PHI · 흡연구역 · 나만의 스팟</title>
+  <title>api 테스트</title>
 
   <link rel="stylesheet" href="./css/phi.css" />
 
   <!-- Kakao Maps -->
-  <script type="text/javascript"
-    src="//dapi.kakao.com/v2/maps/sdk.js?appkey=47bbd47c04e70af1e13f9280c52c609b&autoload=false"></script>
 
   <!-- jQuery -->
   <script src="../js/jquery-3.7.1.js"></script>
@@ -18,8 +16,6 @@
   <!-- ✅ API 먼저 -->
   <script src="./js/dd.api.v1.js" defer></script>
 
-  <!-- App -->
-  <script src="./js/phi.js" defer></script>
 
   <!-- ✅ 테스트 호출 -->
   <script defer>
@@ -67,9 +63,9 @@
       // 실행 토글 (필요한 것만 true)
       // =========================================================
       const RUN = {
-        DD: { postsFlow: true, tagsTop10: true },
-        TB: { lodgingChain: true, searchLog: true, wishlist: false }, // wishlist는 memberId 실제값 필요해서 기본 OFF
-        SJ: { auth: true, postsAndComments: true }
+        DD: { postsFlow: false, tagsTop10: false },
+        TB: { lodgingChain: true, searchLog: true, wishlist: true }, // wishlist는 memberId 실제값 필요해서 기본 OFF
+        SJ: { auth: false, postsAndComments: false }
       };
 
       // =========================================================
@@ -119,7 +115,7 @@
         // DD-3) 스팟 생성 (저장)
         const createBody = {
           authorNo: 1,
-          title: `흡연구역 발견 - 데모 ${Date.now()}`,
+          title: `조은 숙소 발견 - 데모 ${Date.now()}`,
           content: "바람 덜 불어서 좋음(DD 저장 테스트)",
           latitude: 36.3504,
           longitude: 127.3845,
@@ -271,7 +267,7 @@
       // SJ: auth -> 글 생성 -> 댓글 생성 -> 댓글 목록
       // =========================================================
       const sjRun = async () => {
-        const SJ_ID = "admin12";
+        const SJ_ID = "test11";
         const SJ_PW = "admin1234";
         const SJ_NICK = "SJ테스트유저";
 
@@ -343,6 +339,10 @@
         const createUrl = DD.V1.url(DD.V1.API.SJ_POSTS_CREATE);
         logCall("SJ-POST-3 POSTS_CREATE", "POST", createUrl, createBody);
 
+ 
+
+        console.log("createBody  " , createBody );
+
         let createRes;
         try {
           createRes = await DD.V1.SJ.Posts.create(createBody);
@@ -352,12 +352,13 @@
           return;
         }
 
+        console.log("createRes  " , createRes );
+
         const postId =
           createRes?.item?.postId ?? createRes?.data?.item?.postId ??
           createRes?.postId ?? createRes?.data?.postId ??
           createRes?.item?.id ?? createRes?.data?.item?.id ??
           createRes?.id ?? createRes?.data?.id;
-
         if (!postId) {
           console.log("[STOP] SJ 댓글 테스트 중단: create 응답에서 postId를 못 찾음");
           return;
@@ -421,38 +422,7 @@
 </head>
 
 <body>
-  <div id="map-wrap" class="dd-map-wrap">
-    <div id="map"></div>
-
-    <div class="dd-map-ui dd-topbar">
-      <div class="dd-topbar-left">
-        <div class="dd-title">PHI · 흡연구역 · 나만의 스팟</div>
-      </div>
-      <div class="dd-topbar-right">
-        <button id="mylocation" class="dd-btn">현위치</button>
-        <button id="regmode" class="dd-btn dd-btn-primary" aria-pressed="false">등록 모드</button>
-      </div>
-    </div>
-
-    <div class="dd-map-ui dd-rightpanel" aria-label="실시간 랭킹 패널">
-      <div class="dd-card">
-        <div class="dd-card-title">실시간 태그 TOP 10</div>
-        <div class="dd-card-sub">등록된 스팟의 태그로 집계</div>
-        <ol id="tag-top10" class="dd-rank-list">
-          <li class="dd-muted">(아직 태그 없음)</li>
-        </ol>
-      </div>
-
-      <div class="dd-card">
-        <div class="dd-card-title">사용 팁</div>
-        <ul class="dd-tip">
-          <li>등록 모드 켜고 지도 클릭 → 스팟 등록</li>
-          <li>태그는 <b>#</b> 붙여도 되고, 공백/콤마로 구분</li>
-          <li>마커 클릭 → (다음 단계) 상세/댓글</li>
-        </ul>
-      </div>
-    </div>
-  </div>
+  
 </body>
 
 </html>
