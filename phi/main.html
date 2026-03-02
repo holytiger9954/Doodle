@@ -66,9 +66,9 @@
       // 실행 토글 (필요한 것만 true)
       // =========================================================
       const RUN = {
-        DD: { postsFlow: true, tagsTop10: true, auth: true }, // ✅ 추가 (기본 false)
+        DD: { postsFlow: false, tagsTop10: false, auth: false }, // ✅ 추가 (기본 false)
         TB: { lodgingChain: false, searchLog: false, wishlist: false }, // wishlist는 memberId 실제값 필요해서 기본 OFF
-        SJ: { auth: false, postsAndComments: false }
+        SJ: { auth: true, postsAndComments: true }
       };
 
       // =========================================================
@@ -93,7 +93,7 @@
       // - DD.V1.DD.Auth.checkLoginId / signup / login
       // =========================================================
       const ddRunAuth = async () => {
-        const DD_ID = "dd_test12321";
+        const DD_ID = "dd_test191";
         const DD_PW = "admin1234";
         const DD_NICK = "DD테스트유저";
 
@@ -181,7 +181,7 @@
           longitude: 127.3845,
           tags: ["흡연", "대전", "demo"]
         };
-        const createUrl = DD.V1.url(DD.V1.API.POSTS_CREATE);
+        const createUrl = DD.V1.url(DD.V1.API.DD_POSTS_CREATE);
         logCall("DD-3 POSTS_CREATE", "POST", createUrl, createBody);
 
         let createRes;
@@ -204,7 +204,7 @@
 
         // DD-1) 목록 조회 (방금 만든 태그로 검색)
         const listQuery = { q: "demo", page: 1, pageSize: 20 };
-        const listUrl = DD.V1.url(DD.V1.API.POSTS_LIST, null, listQuery);
+        const listUrl = DD.V1.url(DD.V1.API.DD_POSTS_LIST, null, listQuery);
         logCall("DD-1 POSTS_LIST", "GET", listUrl);
 
         try {
@@ -215,7 +215,7 @@
         }
 
         // DD-2) 상세 조회
-        const detailUrl = DD.V1.url(DD.V1.API.POSTS_DETAIL, { postNo });
+        const detailUrl = DD.V1.url(DD.V1.API.DD_POSTS_DETAIL, { postNo });
         logCall("DD-2 POSTS_DETAIL", "GET", detailUrl);
 
         try {
@@ -231,7 +231,7 @@
           content: `댓글 저장 테스트 ${new Date().toLocaleString()}`,
           parentCommentNo: null
         };
-        const cmtAddUrl = DD.V1.url(DD.V1.API.COMMENTS_ADD, { postNo });
+        const cmtAddUrl = DD.V1.url(DD.V1.API.DD_COMMENTS_ADD, { postNo });
         logCall("DD-5 COMMENTS_ADD", "POST", cmtAddUrl, cmtBody);
 
         try {
@@ -242,7 +242,7 @@
         }
 
         // DD-4) 댓글 목록 조회
-        const cmtListUrl = DD.V1.url(DD.V1.API.COMMENTS_LIST, { postNo });
+        const cmtListUrl = DD.V1.url(DD.V1.API.DD_COMMENTS_LIST, { postNo });
         logCall("DD-4 COMMENTS_LIST", "GET", cmtListUrl);
 
         try {
@@ -327,13 +327,13 @@
       // SJ: auth -> 글 생성 -> 댓글 생성 -> 댓글 목록
       // =========================================================
       const sjRun = async () => {
-        const SJ_ID = "test11";
+        const SJ_ID = "test11999";
         const SJ_PW = "admin1234";
         const SJ_NICK = "SJ테스트유저";
 
         // SJ-AUTH-1) 중복 체크
         const checkQ = { loginId: SJ_ID };
-        const checkUrl = DD.V1.url(DD.V1.API.SJ_AUTH_CHECK_ID, null, checkQ);
+        const checkUrl = DD.V1.url(DD.V1.API.SJ_AUTH_CHECK_LOGIN_ID, null, checkQ);
         logCall("SJ-AUTH-1 CHECK_ID", "GET", checkUrl);
 
         let checkRes;
