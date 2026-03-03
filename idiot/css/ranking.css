@@ -1,0 +1,65 @@
+.ranking-container {
+            padding: 80px 20px 20px; /* 헤더 높이만큼 상단 여백 */
+            background-color: var(--main-blue);
+            min-height: 100vh;
+            color: var(--text-white);
+        }
+
+        .ranking-title {
+            font-size: 24px;
+            margin-bottom: 20px;
+            border-left: 4px solid var(--point-orange);
+            padding-left: 10px;
+        }
+
+        .ranking-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .ranking-item {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: 0.3s;
+        }
+
+        .ranking-item:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .rank-number {
+            font-weight: bold;
+            font-size: 18px;
+            color: var(--point-orange);
+            width: 30px;
+        }
+
+        .hashtag-info {
+            flex-grow: 1;
+            margin-left: 10px;
+        }
+
+        .hashtag-name {
+            font-size: 16px;
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        .count-bar {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            overflow: hidden;
+            width: 80%;
+        }
+
+        .count-fill {
+            height: 100%;
+            background: var(--neon-blue);
+        }
