@@ -1,0 +1,20 @@
+#search {
+    border: none; /* 부모가 테두리를 가지므로 input은 테두리 제거 */
+    outline: none;
+    flex-grow: 1; /* 남는 공간을 input이 다 차지하도록 함 */
+    height: 24px;
+}
+#search:focus {
+    outline: none;
+}
+img {
+    cursor: pointer;
+}
+#search-parent {
+    display: flex; /* 가로 정렬 */
+    align-items: center; /* 수직 중앙 정렬 */
+    border: 2px solid rgb(0, 0, 255, 0.6);
+    border-radius: 8px;
+    width: 350px; /* 여기서 너비만 바꾸면 검색창 전체가 반응합니다 */
+    padding: 2px 10px; /* 안쪽 여백으로 위치 조절 */
+}

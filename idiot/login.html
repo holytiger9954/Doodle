@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="kr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/login.css">
+</head>
+<body>
+     <div id="dd-overlay" class="dd-overlay">
+        <div class="dd-auth-box">
+            <span class="close-btn" onclick="closeLogin()">&times;</span>
+            <div id="login-section">
+                <h2 style="color:#222; margin-bottom:20px;">로그인</h2>
+                <form onsubmit="handleLogin(event)">
+                    <input type="text" id="input-dd-user-id" class="dd-input" style="background:#f5f5f5; color:#222;"
+                        placeholder="아이디" required minlength="4" maxlength="12" pattern="^[a-zA-Z][a-zA-Z0-9]*$">
+                    <input type="password" id="input-dd-password" class="dd-input"
+                        style="background:#f5f5f5; color:#222;" placeholder="비밀번호" required minlength="4" maxlength="12" pattern="^[a-zA-Z][a-zA-Z0-9]*$">
+                    <button type="submit" class="auth-submit-btn">접속</button>
+                    <a href="./join.html">아직 회원이 아니신가요? (회원가입) </a>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
