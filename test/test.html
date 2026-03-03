@@ -26,14 +26,20 @@
             <div id="my2" type="button" class="my">등록한 마크</div>
             <div id="my3" type="button" class="my">내가단 댓글</div>
         </div>
-        <div id="make"></div> <!-- 사이드바 안에 저장된 배열 담을 박스 -->
+        <div id="make"></div> <!-- 마이페이지 사이드바 안에 저장된 담을 박스 -->
     </div>
-    <div id="smokmake" class="sidebar"></div> <!-- 흡연부스 마크 클릭시 나올 사이드바 -->
-    <div id="mymake" class="sidebar"></div> <!-- 등록한 마크 클릭시 나올 사이드바 -->
+
+    <div id="smokmake" class="sidebar">
+        <div id="closed" class="closed">x</div>
+    </div> <!-- 흡연부스 마크 클릭시 나올 사이드바 -->
+    <div id="mymake" class="sidebar"> <!-- 등록한 마크 클릭시 나올 사이드바 -->
+        <div class="closed">x</div>
+    </div> 
 
     <input id="savebtn" type="button" value="등록">
     <div id="saveside" class="sidebar" style="background: rgba(0,0,0,0.5);">
         <div class="dd-auth-box" style="position: relative; height:40%"> <!-- 등록버튼 누르면 나올 사이드바 -->
+            
             <select id="category" style="width: 100%">
                 <option value="흡연">흡연</option>
                 <option value="내장소">내장소</option>

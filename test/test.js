@@ -43,10 +43,8 @@ let comment = []
 async function ddServer() {
     try {           //서버에서 응답이 오면 출발
         const response = await DD.V1.Posts.list();
-        console.log("서버 응답 전체:", response);
         // 밑에서 items써서 변수일 뿐
         const posts = response.items; //도착한 데이터 가져오기
-        console.log("실제 사용할 posts 데이터:", posts)
         if (posts && posts.length > 0) {
             smokingBooth = posts.filter(p => p.tags.includes('흡연'));//"흡연"만 뽑기
             myMemory = posts.filter(p => p.tags.includes('내장소'));//"내장소"만 뽑기
@@ -104,7 +102,15 @@ function bindEvents() {
     const mymakerimg = new kakao.maps.MarkerImage("화면 캡처 2026-03-01 102914.png", imageSize);
     const smokmaker = new kakao.maps.Marker();
     const mymaker = new kakao.maps.Marker();
+    let smokemakers = [] //마크 배열
+    let mymakers = []
 
+    function clearMarkers(markerArray) { //마크 초기화 함수
+        markerArray.forEach(function (clear) {
+            clear.setMap(null);
+        })
+        markerArray.length = 0;
+    }
     //임시 랜덤 좌표
     // function ranLocation() {
     //     return { //서울의 위도와 경도 서버에서 받아오면 삭제해도됨
@@ -158,6 +164,8 @@ function bindEvents() {
                 //box클릭이벤트
                 //box는 me의 이벤트를 발생시켯을때만 발생하기에 me이벤트 안에서 행해야함
                 box.addEventListener('click', function () {
+                    clearMarkers(smokemakers)
+                    clearMarkers(mymakers)
                     // btn.style.display='block' 버튼생성
                     sidebar.classList.remove('-open');//사이드바 내리기
                     sidebarFlag = true;//사이드바 내린상태의 플래그 만들기
@@ -180,14 +188,86 @@ function bindEvents() {
         })
     })
 
+    const closed = document.querySelectorAll('.closed')
     const smokmake = document.querySelector('#smokmake')
     const mymake = document.querySelector('#mymake') //지도 마크 클릭 이벤트
     kakao.maps.event.addListener(smokmaker, 'click', function () {
         smokmake.classList.add('-open') //닫을 방법 구상해야함 x는 짜침
     }) // 마크 사이드바
+    // closed.addEventListener('click', function () {
+    //     smokmake.classList.remove('-open')//사이드바 없애기
+    // })
     kakao.maps.event.addListener(mymaker, 'click', function () {
         mymake.classList.add('-open')
     })
+    // closed.addEventListener('click', function () {
+    //     mymake.classList.remove('-open')//사이드바 없애기
+    // })
+    closed.forEach(function(btn){
+        btn.addEventListener('click',function(){
+            smokmake.classList.remove('-open');
+            mymake.classList.remove('-open');
+        })
+    })
+
+    //마크 뿌리기
+    let smokmakerflag = false;
+    const smokdata = document.querySelector('#smokdata')
+    smokdata.addEventListener('click', function () {
+        if (!smokmakerflag) {
+            clearMarkers(mymakers)
+            clearMarkers(smokemakers)
+            smokingBooth.forEach(function (item) {//받아온 데이터
+                const opensmok = new kakao.maps.LatLng(item.latitude, item.longitude);//받아온 데이터의 위도 경도
+                const opensmoking = new kakao.maps.Marker()//마크객체
+                opensmoking.setPosition(opensmok);
+                opensmoking.setMap(map);
+                opensmoking.setImage(smokmakerimg)//담배이미지
+                smokemakers.push(opensmoking)
+                // 전체뿌린 마크 이벤트
+                kakao.maps.event.addListener(opensmoking, 'click', function () {
+                    const smokmake = document.querySelector('#smokmake')
+                    smokmake.classList.add('-open')
+                })
+                smokemakers.push(opensmoking)
+                smokmakerflag = true;
+            })
+        } else {
+            clearMarkers(smokemakers)
+            smokmakerflag = false;
+        }
+    })
+
+    mymarkersflag = false;
+    const mydata = document.querySelector('#mydata')
+    mydata.addEventListener('click', function () {
+        if (!mymarkersflag) {
+            clearMarkers(mymakers)
+            clearMarkers(smokemakers)
+            myMemory.forEach(function (item) {
+                const openmy = new kakao.maps.LatLng(item.latitude, item.longitude);
+                const openmy1 = new kakao.maps.Marker()
+                openmy1.setPosition(openmy);
+                openmy1.setMap(map);
+                openmy1.setImage(mymakerimg)
+                mymakers.push(openmy1)
+
+                // 배열 마크 클릭
+                kakao.maps.event.addListener(openmy1, 'click', function () {
+                    const mymake = document.querySelector('#mymake')
+                    mymake.classList.add('-open')
+
+                })
+
+                mymarkersflag = true;
+            })
+        } else {
+            clearMarkers(mymakers)
+            mymarkersflag = false;
+        }
+    })
+
+
 
     // 장소 등록 이벤트
     const saveside = document.querySelector('#saveside')
@@ -238,57 +318,9 @@ function bindEvents() {
 
     })
 
-    let smokemakers = [] //마크 배열
-    let mymakers = []
 
-    function clearMarkers(markerArray) { //마크 초기화 함수
-        markerArray.forEach(function (clear) {
-            clear.setMap(null);
-        })
-        markerArray.length = 0;
-    }
 
-    //정보 뿌리기
-    let smokmakerflag = false;
-    const smokdata = document.querySelector('#smokdata')
-    smokdata.addEventListener('click', function () {
-        if (!smokmakerflag) {
-            clearMarkers(mymakers)
-            clearMarkers(smokemakers)
-            smokingBooth.forEach(function (item) {//받아온 데이터
-                const opensmok = new kakao.maps.LatLng(item.latitude, item.longitude);//받아온 데이터의 위도 경도
-                const opensmoking = new kakao.maps.Marker()//마크객체
-                opensmoking.setPosition(opensmok);
-                opensmoking.setMap(map);
-                opensmoking.setImage(smokmakerimg)//담배이미지
-                smokemakers.push(opensmoking)
-                smokmakerflag = true;
-            })
-        } else {
-            clearMarkers(smokemakers)
-            smokmakerflag = false;
-        }
-    })
-    mymarkersflag = false;
-    const mydata = document.querySelector('#mydata')
-    mydata.addEventListener('click', function () {
-        if (!mymarkersflag) {
-            clearMarkers(mymakers)
-            clearMarkers(smokemakers)
-            myMemory.forEach(function (item) {
-                const openmy = new kakao.maps.LatLng(item.latitude, item.longitude);
-                const openmy1 = new kakao.maps.Marker()
-                openmy1.setPosition(openmy);
-                openmy1.setMap(map);
-                openmy1.setImage(mymakerimg)
-                mymakers.push(openmy1)
-                mymarkersflag = true;
-            })
-        } else {
-            clearMarkers(mymakers)
-            mymarkersflag = false;
-        }
-    })
+
 
     //////////////////////////////////////////////////////////////////////////////////////
     // [내 위치 찾기]
