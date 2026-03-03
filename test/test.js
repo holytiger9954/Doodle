@@ -111,6 +111,9 @@ function bindEvents() {
         })
         markerArray.length = 0;
     }
+     function clearMarker(marker){
+        marker.setMap(null)
+     }
     //임시 랜덤 좌표
     // function ranLocation() {
     //     return { //서울의 위도와 경도 서버에서 받아오면 삭제해도됨
@@ -217,6 +220,8 @@ function bindEvents() {
         if (!smokmakerflag) {
             clearMarkers(mymakers)
             clearMarkers(smokemakers)
+            clearMarker(smokmaker)
+            clearMarker(mymaker)
             smokingBooth.forEach(function (item) {//받아온 데이터
                 const opensmok = new kakao.maps.LatLng(item.latitude, item.longitude);//받아온 데이터의 위도 경도
                 const opensmoking = new kakao.maps.Marker()//마크객체
@@ -244,6 +249,8 @@ function bindEvents() {
         if (!mymarkersflag) {
             clearMarkers(mymakers)
             clearMarkers(smokemakers)
+             clearMarker(smokmaker)
+            clearMarker(mymaker)
             myMemory.forEach(function (item) {
                 const openmy = new kakao.maps.LatLng(item.latitude, item.longitude);
                 const openmy1 = new kakao.maps.Marker()
