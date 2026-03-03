@@ -61,11 +61,6 @@
     // (옵션) category, verified는 서버 구현에 따라 지원될 수 있음
     DD_TAGS_TOP: "/dd/tags/top",
 
-    // DD Auth
-    DD_AUTH_CHECK_LOGIN_ID: "/dd/auth/check-login-id",
-    DD_AUTH_SIGNUP: "/dd/auth/signup",
-    DD_AUTH_LOGIN: "/dd/auth/login",
-
     /* ===========================
      * TB_ group (user features)
      * Base: /api/v1
@@ -102,51 +97,14 @@
     // POST /api/v1/auth/signup
     TB_AUTH_SIGNUP: "/auth/signup",
 
+    // (TB) 로그인
+    // POST /api/v1/auth/login
+    TB_AUTH_LOGIN: "/auth/login",
+
     // (TB) 기존 userId에 로그인 계정 추가(자격증명 등록)
     // Use: TB_USER는 존재하지만 TB_USER_AUTH가 없는 경우 연결
     // POST /api/v1/auth/register-credentials
     TB_AUTH_REGISTER_CREDENTIALS: "/auth/register-credentials",
-
-    /* ===========================
-     * TB_ group (lodging)
-     * Base: /api/v1
-     * =========================== */
-
-    // (TB-LOD) 숙소 리스트/검색/필터
-    // GET /api/v1/lodging/properties?page&pageSize&sort&city&district&minPrice&maxPrice&guests&beds&amenity&amenities
-    TB_LODG_PROPERTIES_LIST: "/lodging/properties",
-
-    // (TB-LOD) 숙소 상세
-    // GET /api/v1/lodging/properties/:propertyId
-    TB_LODG_PROPERTIES_DETAIL: "/lodging/properties/:propertyId",
-
-    // (TB-LOD) 숙소 객실
-    // GET /api/v1/lodging/properties/:propertyId/rooms
-    TB_LODG_PROPERTIES_ROOMS: "/lodging/properties/:propertyId/rooms",
-
-    // (TB-LOD) 숙소 리뷰
-    // GET /api/v1/lodging/properties/:propertyId/reviews?page&pageSize
-    TB_LODG_PROPERTIES_REVIEWS: "/lodging/properties/:propertyId/reviews",
-
-    // (TB-LOD) 평점 요약
-    // GET /api/v1/lodging/properties/:propertyId/rating-summary
-    TB_LODG_PROPERTIES_RATING_SUMMARY: "/lodging/properties/:propertyId/rating-summary",
-
-    // (TB-LOD) 도시 목록
-    // GET /api/v1/lodging/cities
-    TB_LODG_CITIES: "/lodging/cities",
-
-    // (TB-LOD) 구/군 목록
-    // GET /api/v1/lodging/districts?city=
-    TB_LODG_DISTRICTS: "/lodging/districts",
-
-    // (TB-LOD) 도시별 숙소 수
-    // GET /api/v1/lodging/city-counts
-    TB_LODG_CITY_COUNTS: "/lodging/city-counts",
-
-    // (TB-LOD) 데이터 페이로드(필터 UI용)
-    // GET /api/v1/lodging/payload?city=
-    TB_LODG_PAYLOAD: "/lodging/payload",
 
     /* ===========================
      * SJ_ group (board)
@@ -243,38 +201,6 @@
   // =========================================================
 
   // ---------- DD ----------
-
-  // DD Auth (same call style as others)
-  DD.V1.DD = DD.V1.DD || {};
-  DD.V1.DD.Auth = {
-    // GET /dd/auth/check-login-id?loginId=...
-    checkLoginId: (query) => DD.V1.ajax({
-      url: DD.V1.url(DD.V1.API.DD_AUTH_CHECK_LOGIN_ID, null, query || {})
-    }),
-
-    // POST /dd/auth/signup
-    signup: (body) => DD.V1.ajax({
-      method: "POST",
-      url: DD.V1.url(DD.V1.API.DD_AUTH_SIGNUP),
-      json: {
-        loginId: String(body?.loginId || "").trim(),
-        password: String(body?.password || ""),
-        nickname: String(body?.nickname || "").trim(),
-        email: body?.email == null ? undefined : String(body.email).trim()
-      }
-    }),
-
-    // POST /dd/auth/login
-    login: (body) => DD.V1.ajax({
-      method: "POST",
-      url: DD.V1.url(DD.V1.API.DD_AUTH_LOGIN),
-      json: {
-        loginId: String(body?.loginId || "").trim(),
-        password: String(body?.password || "")
-      }
-    }),
-  };
-
   const normTags = (tags) =>
     Array.isArray(tags)
       ? tags.map(String).map(s => s.trim()).filter(Boolean)
@@ -325,35 +251,6 @@
 
   // ---------- TB ----------
   DD.V1.TB = {
-    Lodging: {
-      // GET /lodging/properties
-      list: (query) => DD.V1.ajax({ url: DD.V1.url(DD.V1.API.TB_LODG_PROPERTIES_LIST, null, query || {}) }),
-
-      // GET /lodging/properties/:propertyId
-      get: (propertyId) => DD.V1.ajax({ url: DD.V1.url(DD.V1.API.TB_LODG_PROPERTIES_DETAIL, { propertyId }) }),
-
-      // GET /lodging/properties/:propertyId/rooms
-      rooms: (propertyId) => DD.V1.ajax({ url: DD.V1.url(DD.V1.API.TB_LODG_PROPERTIES_ROOMS, { propertyId }) }),
-
-      // GET /lodging/properties/:propertyId/reviews
-      reviews: (propertyId, query) => DD.V1.ajax({ url: DD.V1.url(DD.V1.API.TB_LODG_PROPERTIES_REVIEWS, { propertyId }, query || {}) }),
-
-      // GET /lodging/properties/:propertyId/rating-summary
-      ratingSummary: (propertyId) => DD.V1.ajax({ url: DD.V1.url(DD.V1.API.TB_LODG_PROPERTIES_RATING_SUMMARY, { propertyId }) }),
-
-      // GET /lodging/cities
-      cities: () => DD.V1.ajax({ url: DD.V1.url(DD.V1.API.TB_LODG_CITIES) }),
-
-      // GET /lodging/districts?city=
-      districts: (query) => DD.V1.ajax({ url: DD.V1.url(DD.V1.API.TB_LODG_DISTRICTS, null, query || {}) }),
-
-      // GET /lodging/city-counts
-      cityCounts: () => DD.V1.ajax({ url: DD.V1.url(DD.V1.API.TB_LODG_CITY_COUNTS) }),
-
-      // GET /lodging/payload?city=
-      payload: (query) => DD.V1.ajax({ url: DD.V1.url(DD.V1.API.TB_LODG_PAYLOAD, null, query || {}) }),
-    },
-
     Wishlist: {
       // POST /wishlist/toggle
       toggle: (body) => DD.V1.ajax({
