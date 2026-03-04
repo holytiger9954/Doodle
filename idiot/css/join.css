@@ -1,31 +1,8 @@
 .dd-input {
-    background:#f5f5f5; 
-    color:#222;
-    width: 450px;
-}
-.dd-overlay {
-    display: flex;
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-}
-.dd-overlay.-open{ display:flex; }
-.dd-auth-box { background: white; padding: 20px; border-radius: 10px; min-width: 280px; }
-.close-btn { float: right; cursor: pointer; font-size: 20px; }
-form {
-    display: flex;
-    flex-direction: column;
-}
-.dd-input {
-    margin: 7px 0;
     width: 280px;
-    height: 24px;
-    border-radius: 4px;
 }
+
 .auth-submit-btn {
-    margin: 7px 0;
     width: 280px;
     margin-left: 3px;
 }

@@ -1,7 +1,3 @@
-* { margin: 0; padding: 0; box-sizing: border-box; }
-html, body { width: 100%; height: 100%; overflow: hidden; }
-
-
 #mypage {
     /* display: flex;
 
@@ -14,40 +10,44 @@ html, body { width: 100%; height: 100%; overflow: hidden; }
 
 .mypage {
     display: flex;
-    white-space: nowrap; /* 박스 넘어가도 줄바꿈 x */
-    overflow-x:auto; /* 스크롤 */
-    overflow-y:hidden;
-    justify-content: flex-start;    
+    white-space: nowrap;
+    /* 박스 넘어가도 줄바꿈 x */
+    overflow-x: auto;
+    /* 스크롤 */
+    overflow-y: hidden;
+    justify-content: flex-start;
 
-    gap:10px;
+    gap: 10px;
     width: 100%;
     height: 100%;
 }
 
-.mypage-btn{
-    border:none;
+.mypage-btn {
+    border: none;
     cursor: pointer;
     width: 120px;
     height: 30px;
 }
-
-.mypage-btn img{
-    width:20px;
-    height:20px;
-    object-fit: contain; /* 이미지 비율 유지 */
-    vertical-align: middle; /* 수직정렬 */ 
+    
+.mypage-btn img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    /* 이미지 비율 유지 */
+    vertical-align: middle;
+    /* 수직정렬 */
     margin-right: 5px;
 }
 
-.ad{
-    position:absolute;
+.ad {
+    position: absolute;
     bottom: 400px;
-    
-    border:1px solid red;
-    
+
+    border: 1px solid red;
+
     width: 100%;
     height: 30%;
-   
+
 }
 
 /* .sidebar{

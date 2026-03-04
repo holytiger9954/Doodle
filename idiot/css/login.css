@@ -1,28 +1,16 @@
-.dd-overlay {
-    display: flex;
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.5);
-    z-index: 2000;
-    justify-content: center;
-    align-items: center;
-}
-.dd-overlay.-open{ display:flex; }
-.dd-auth-box { background: white; padding: 20px; border-radius: 10px; min-width: 280px; }
-.close-btn { float: right; cursor: pointer; font-size: 20px; }
-a, a:visited, a:active {
+a,
+a:visited,
+a:active {
     color: #222;
     font-size: 0.5em;
     margin: 7px 0;
     text-decoration: none;
 }
+
 .auth-submit-btn {
     width: 240px;
 }
-form {
-    display : flex;
-    flex-direction: column;
-    align-items: center;
-}
+
 .dd-input {
     margin: 7px 0;
     width: 240px;
@@ -30,9 +18,11 @@ form {
     border-radius: 4px;
     /* margin-right: 30px; */
 }
+
 .auth-submit-btn {
     margin: 7px 0;
 }
-h2 {
+
+/* h2 {
     margin-left: 16px;
-}
+} */
