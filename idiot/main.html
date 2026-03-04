@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="./css/main.css">
     <script type="text/javascript"
         src="//dapi.kakao.com/v2/maps/sdk.js?appkey=47bbd47c04e70af1e13f9280c52c609b&autoload=false&libraries=services,clusterer"></script>
+    <script src="/idiot/js/marker.js"></script>
 </head>
 
 <body>
@@ -29,12 +30,14 @@
         <iframe src="ranking.html" style="width: 100%; height: 100%; border: none;"></iframe>
     </div>
 
+
     <div id="side-mypage" class="side-panel">
         <div class="side-header">
             <h3>MY PAGE</h3>
             <button class="close-panel" onclick="toggleSidebar()">×</button>
         </div>
         <div class="category-list">
+            <div id="marker" class="marker"></div>
             <button type="button" class="side-btn"><img src="./img/별.png"> <span>찜 목록</span></button>
             <button type="button" class="side-btn"><img src="./img/병원.png"> <span>병원</span></button>
             <button type="button" class="side-btn"><img src="./img/체육관.png"> <span>체육관</span></button>
