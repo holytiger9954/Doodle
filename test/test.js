@@ -82,7 +82,7 @@ my.forEach(function (me, index) {  //버튼구분
         })
     })
 
-     // 장소 등록 이벤트
+    // 장소 등록 이벤트
     const saveside = document.querySelector('#saveside')
     // 등록 사이드 바 닫기 버튼
     const saveclose = document.querySelector('#saveclose');
