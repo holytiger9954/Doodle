@@ -1,3 +1,29 @@
+// 1. 천안 범위 랜덤 좌표 생성 함수 (한 번 선언해두기)
+function getRandomCheonanCoords() {
+    const minLat = 36.75;
+    const maxLat = 36.85;
+    const minLng = 127.10;
+    const maxLng = 127.20;
+
+    return {
+        latitude: Number((Math.random() * (maxLat - minLat) + minLat).toFixed(6)),
+        longitude: Number((Math.random() * (maxLng - minLng) + minLng).toFixed(6))
+    };
+}
+
+// 2. smokingBooth 배열에 랜덤 데이터 10개 채우기
+for (let i = 0; i < 10; i++) {
+    const coords = getRandomCheonanCoords();
+    smokingBooth.push({
+        title: `랜덤 흡연구역 ${i + 1}`,
+        latitude: coords.latitude,
+        longitude: coords.longitude,
+        img: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png", // 테스트용 이미지
+        tags: ["흡연부스"]
+    });
+}
+
+
 //x버튼
 closed.forEach(function (btn) {
     btn.addEventListener('click', function () {
@@ -5,6 +31,7 @@ closed.forEach(function (btn) {
         mymake.classList.remove('-open');
     })
 })
+
 //마커 지우기
 let allmarker = [];
 //정보 받기
@@ -31,6 +58,7 @@ function markerData(markersData, markerImg) { //마크 관리 함수
     }
 }
 
+let smokingBooth = []
 //배열 뿌리기
 smokdata.addEventListener('click', function () {
     markerData(smokingBooth, smokmakeimg);
@@ -81,51 +109,3 @@ my.forEach(function (me, index) {  //버튼구분
         })
     })
 })
-
-    // 장소 등록 이벤트
-    const saveside = document.querySelector('#saveside')
-    // 등록 사이드 바 닫기 버튼
-    const saveclose = document.querySelector('#saveclose');
-    saveclose.addEventListener('click', function () {
-        saveside.classList.remove('-open')
-        postflag = false;
-        savebtn.value = "등록"
-    })
-
-    const save = document.querySelector('#savebtn')
-    save.addEventListener('click', function () {
-        postflag = true //클릭이벤트 안에 클릭이벤트를 넣으면 중첩이벤트발생 될수있어서
-        // 이벤트 분리하고 연결지을 플래그
-        save.value = "등록중"
-        alert("등록할 좌표를 지정해주세요")
-    })
-    kakao.maps.event.addListener(map, 'click', function (saveEvent) {
-        if (postflag) { //클릭을해서 플래그가 트루가 되면
-
-            const savelat = saveEvent.latLng.getLat();//카카오맵 위도 경도 따기
-            const savelng = saveEvent.latLng.getLng();
-
-            document.querySelector("#savelat").value = savelat
-            document.querySelector("#savelng").value = savelng
-
-            saveside.classList.add('-open') //사이드바 열기
-            postflag = false;// 플래그 초기화
-        }
-    })
-    //최종등록확정
-    const saveend = document.querySelector('#saveend')
-    saveend.addEventListener('click', async function () {
-        const savedata = { //서버에 보낼 데이터 양식
-            authorNo: 1,
-            title: document.querySelector('#hash').value,
-            content: document.querySelector('#hash').value || "",
-            latitude: Number(document.querySelector('#savelat').value),
-            longitude: Number(document.querySelector('#savelng').value),
-            tags: [document.querySelector('#category').value]
-        }
-
-        await DD.V1.Posts.create(savedata)
-        alert("등록이 완료되었습니다")
-        location.reload()//새로고침
-
-    })
