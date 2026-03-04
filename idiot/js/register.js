@@ -41,14 +41,15 @@ function bind() {
                     }
                     //필터로 비공개를 걸러야함
                     const savedata = { //서버에 보낼 데이터 양식
-                        authorNo: 1,
                         title: titleInput.value,
-                        content: titleInput.value || "",
                         latitude: Number(latInput.value),
                         longitude: Number(longInput.value),
-                        tags: [tagsInput.value]
                     }
-
+                    window.parent.postMessage({
+                        type: 'newMarker',
+                        data: savedata
+                    },'*');
+                    
                     if (!private.checked) {
                         alert('공개 등록되었습니다')
                         window.parent.postMessage('closeRegister', '*');
@@ -63,7 +64,6 @@ function bind() {
                 alert('취소되었습니다')
                 window.parent.postMessage('closeRegister', '*');
             }
-
         })
     })
 }

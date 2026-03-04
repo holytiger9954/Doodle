@@ -10,6 +10,31 @@ function init() {
 //         mymake.classList.remove('-open');
 //     })
 // })
+
+  let allmarker = [];
+    //정보 받기
+    function markerData(markersData) { //마크 관리 함수
+
+        allmarker.forEach(function (d) {
+            d.setMap(null); //화면에 마크 초기화
+        })
+        allmarker = []; //배열로 담을 준비
+        markersData.forEach(function (item) { //정보 배열만큼 생성
+            const marker = new kakao.maps.Marker({//전달받은 좌표
+                position: new kakao.maps.LatLng(item.latitude, item.longitude),
+                map: map //이동
+            })
+            allmarker.push(marker);
+        })
+        if (markersData.length === 1) {//단일마크
+            const onemarker = markersData[0];
+            const onemarkerMove = new kakao.maps.LatLng(onemarker.latitude, onemarker.longitude);
+
+            map.panTo(onemarkerMove)
+            map.setLevel(1);
+        }
+    }
+
 function bind(){
     //임시좌표
     const testCoords = [
@@ -37,30 +62,7 @@ function bind(){
         { title: "동대문 디자인플라자(DDP)", latitude: 37.566524, longitude: 127.009224 }
     ];
 
-    //마커 지우기
-    let allmarker = [];
-    //정보 받기
-    function markerData(markersData) { //마크 관리 함수
-
-        allmarker.forEach(function (d) {
-            d.setMap(null); //화면에 마크 초기화
-        })
-        allmarker = []; //배열로 담을 준비
-        markersData.forEach(function (item) { //정보 배열만큼 생성
-            const marker = new kakao.maps.Marker({
-                position: new kakao.maps.LatLng(item.latitude, item.longitude),
-                map: map,
-            })
-            allmarker.push(marker);
-        })
-        if (markersData.length === 1) {//단일마크
-            const onemarker = markersData[0];
-            const onemarkerMove = new kakao.maps.LatLng(onemarker.latitude, onemarker.longitude);
-
-            map.panTo(onemarkerMove)
-            map.setLevel(3);
-        }
-    }
+  
 
     // let smokingBooth = []
 
@@ -75,6 +77,7 @@ function bind(){
     const menu = document.querySelectorAll('.category-list')
     const save = document.querySelectorAll('.side-btn')
     const make = document.querySelector('#marker')
+    const ranking = document.querySelector('#ranking-wrapper')
     save.forEach(function (me, index) {
         me.addEventListener('click', function () {
             make.innerHTML = ''
@@ -89,11 +92,13 @@ function bind(){
                 box.className = 'box'
                 box.innerHTML = `<p>${item.title}</p>`
                 box.addEventListener('click', function () {
-                     window.parent.postMessage('closeRegister', '*');
                     markerData([item])
+                    ranking.classList.add('hide')
                 })
                 make.appendChild(box)
             })
         })
     })
+
+
 }

@@ -118,3 +118,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 });
+
+//김민권
+window.addEventListener('message',function(e){
+    if(e.data.type === 'newMarker'){
+        const newCoord = e.data.data;
+        if(typeof markerData ==='function'){
+            markerData([newCoord])
+        }
+    }
+})
