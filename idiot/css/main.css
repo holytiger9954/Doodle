@@ -76,61 +76,53 @@
     z-index: 1;
 }
 
-/* 랭킹창 본체 */
+/* 랭킹창 기본 스타일 - 왼쪽 배치 */
 #ranking-wrapper {
-    position: absolute;
-    top: 130px;
+    position: fixed;
+    top: 100px;
     left: 20px;
-    z-index: 1000;
-    width: 280px;
-    height: 450px;
-    background: white;
-    border-radius: 12px;
-    overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: translateX(0);
-    opacity: 1;
+    /* right 대신 left 사용 */
+    width: 350px;
+    height: 500px;
+    background-color: var(--main-blue);
+    border-radius: 15px;
+    z-index: 2000;
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
-/* 닫혔을 때: 왼쪽으로 밀리지만 40px(손잡이)을 남김 */
+/* 닫혔을 때 (왼쪽 밖으로 숨김) */
 #ranking-wrapper.hide {
-    transform: translateX(-260px);
-    opacity: 0.9;
+    /* 왼쪽으로 345px만큼 밀어내서 5px만 화면에 걸치게 함 */
+    transform: translateX(-345px);
     cursor: pointer;
-    /* 마우스 포인터가 손가락 모양으로 변함 */
 }
 
-/* 중요: 닫혔을 때 삐져나온 부분(손잡이)이 클릭 잘 되도록 iframe 클릭 방지 */
-#ranking-wrapper.hide iframe {
+/* 랭킹창이 hide 상태일 때 X 버튼을 숨김 */
+#ranking-wrapper.hide .close-ranking {
+    opacity: 0;
     pointer-events: none;
+    /* 클릭 안 되게 방지 */
 }
 
-/* X 버튼: 파란색 헤더 위 우상단 */
+/* 닫기 버튼 기본 스타일 (애니메이션 추가) */
 .close-ranking {
     position: absolute;
     top: 10px;
-    right: 10px;
-    width: 26px;
-    height: 26px;
-    background: rgba(255, 255, 255, 0.3);
-    border: 1px solid white;
-    border-radius: 50%;
+    right: 15px;
+    background: none;
+    border: none;
     color: white;
-    font-size: 18px;
-    font-weight: bold;
+    font-size: 24px;
     cursor: pointer;
-    z-index: 1010;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: 0.2s;
+    transition: opacity 0.3s ease;
+    /* 부드럽게 사라짐 */
+    z-index: 2100;
 }
 
-/* 닫혔을 때 X 버튼은 숨겨서 깔끔하게 만듦 */
-#ranking-wrapper.hide .close-ranking {
-    opacity: 0;
-    visibility: hidden;
+/* 랭킹창이 hide일 때는 내부의 iframe이 클릭을 방해하지 않도록 함 */
+#ranking-wrapper.hide iframe {
+    pointer-events: none;
 }
 
 /* 사이드바 기본 스타일 (오른쪽 밖으로 숨김) */
@@ -217,4 +209,3 @@
 .side-btn:hover span {
     color: white;
 }
-

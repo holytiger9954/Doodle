@@ -1,111 +1,99 @@
-// 1. 천안 범위 랜덤 좌표 생성 함수 (한 번 선언해두기)
-function getRandomCheonanCoords() {
-    const minLat = 36.75;
-    const maxLat = 36.85;
-    const minLng = 127.10;
-    const maxLng = 127.20;
-
-    return {
-        latitude: Number((Math.random() * (maxLat - minLat) + minLat).toFixed(6)),
-        longitude: Number((Math.random() * (maxLng - minLng) + minLng).toFixed(6))
-    };
+window.onload = init;
+function init() {
+    bind()
 }
-
-// 2. smokingBooth 배열에 랜덤 데이터 10개 채우기
-for (let i = 0; i < 10; i++) {
-    const coords = getRandomCheonanCoords();
-    smokingBooth.push({
-        title: `랜덤 흡연구역 ${i + 1}`,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-        img: "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/markerStar.png", // 테스트용 이미지
-        tags: ["흡연부스"]
-    });
-}
-
 
 //x버튼
-closed.forEach(function (btn) {
-    btn.addEventListener('click', function () {
-        smokmake.classList.remove('-open');
-        mymake.classList.remove('-open');
-    })
-})
+// closed.forEach(function (btn) {
+//     btn.addEventListener('click', function () {
+//         smokmake.classList.remove('-open');
+//         mymake.classList.remove('-open');
+//     })
+// })
+function bind(){
+    //임시좌표
+    const testCoords = [
+        { title: "천안시청 인근", latitude: 36.815129, longitude: 127.113894 },
+        { title: "천안역", latitude: 36.808945, longitude: 127.149182 },
+        { title: "천안터미널", latitude: 36.819443, longitude: 127.156557 },
+        { title: "단국대 천안캠퍼스", latitude: 36.833917, longitude: 127.172467 },
+        { title: "상명대 천안캠퍼스", latitude: 36.832968, longitude: 127.178121 },
+        { title: "불당동 카페거리", latitude: 36.809311, longitude: 127.106294 },
+        { title: "두정역", latitude: 36.832561, longitude: 127.149121 },
+        { title: "백석대학교", latitude: 36.839444, longitude: 127.185556 },
+        { title: "독립기념관", latitude: 36.783633, longitude: 127.223048 },
+        { title: "천안삼거리공원", latitude: 36.789547, longitude: 127.164503 }
+    ];
+    const seoulCoords = [
+        { title: "서울시청", latitude: 37.566535, longitude: 126.977969 },
+        { title: "광화문 광장", latitude: 37.570975, longitude: 126.977759 },
+        { title: "경복궁", latitude: 37.579617, longitude: 126.977041 },
+        { title: "남산타워", latitude: 37.551169, longitude: 126.988227 },
+        { title: "명동역", latitude: 37.560989, longitude: 126.986187 },
+        { title: "강남역", latitude: 37.497942, longitude: 127.027621 },
+        { title: "홍대입구역", latitude: 37.557192, longitude: 126.924311 },
+        { title: "여의도 한강공원", latitude: 37.528430, longitude: 126.933074 },
+        { title: "롯데월드타워", latitude: 37.512558, longitude: 127.102534 },
+        { title: "동대문 디자인플라자(DDP)", latitude: 37.566524, longitude: 127.009224 }
+    ];
 
-//마커 지우기
-let allmarker = [];
-//정보 받기
-function markerData(markersData, markerImg) { //마크 관리 함수
+    //마커 지우기
+    let allmarker = [];
+    //정보 받기
+    function markerData(markersData) { //마크 관리 함수
 
-    allmarker.forEach(function (d) {
-        d.setMap(null); //화면에 마크 초기화
-    })
-    allmarker = []; //배열로 담을 준비
-    markersData.forEach(function (item) { //정보 배열만큼 생성
-        const marker = new kakao.maps.Marker({
-            position: new kakao.maps.LatLng(item.latitude, item.longitude),
-            map: map,
-            image: markerImg
+        allmarker.forEach(function (d) {
+            d.setMap(null); //화면에 마크 초기화
         })
-        allmarker.push(marker);
-    })
-    if (markersData.length === 1) {//단일마크
-        const onemarker = markersData[0];
-        const onemarkerMove = new kakao.maps.LatLng(onemarker.latitude, onemarker.longitude);
-
-        map.panTo(onemarkerMove)
-        map.setLevel(3);
-    }
-}
-
-let smokingBooth = []
-//배열 뿌리기
-smokdata.addEventListener('click', function () {
-    markerData(smokingBooth, smokmakeimg);
-})      //정보 날리기
-mydata.addEventListener('click', function () {
-    markerData(myMemory, mymakeimg)
-})
-
-// 마이페이지에서 저장된 마크 보기
-my.forEach(function (me, index) {  //버튼구분
-    me.addEventListener('click', function () {
-        make.innerHTML = ''
-        my.forEach(function (font) {
-            font.style.fontWeight = 'normal'
-        })
-        let select; //정보담을 변수
-        let currentImg;
-        if (index === 0) { //1번박스에 정보담기
-            me.style.fontWeight = 'bold';
-            select = smokingBooth;
-            currentImg = smokmakeimg
-        } else if (index === 1) {
-            me.style.fontWeight = 'bold';
-            select = myMemory;
-            currentImg = mymakeimg
-        } else {
-            me.style.fontWeight = 'bold';
-            select = comment;
-        }
-        select.forEach(function (item) { //정보담긴 변수를 item라 명함
-            const box = document.createElement('div');
-            box.className = 'box'//정보를 보여줄 박스들
-            box.innerHTML = `
-                    <img src = "${item.img}">
-                    <p>${item.title}</p>
-                `;//정보담긴 박스의 이미지와 텍스트 표시
-            //box클릭이벤트
-            //box는 me의 이벤트를 발생시켯을때만 발생하기에 me이벤트 안에서 행해야함
-            box.addEventListener('click', function () {
-                if (index === 0) {
-                    markerData([item], smokmakeimg);
-                } else if (index === 1) {
-                    markerData([item], mymakeimg)
-
-                }
+        allmarker = []; //배열로 담을 준비
+        markersData.forEach(function (item) { //정보 배열만큼 생성
+            const marker = new kakao.maps.Marker({
+                position: new kakao.maps.LatLng(item.latitude, item.longitude),
+                map: map,
             })
-            make.appendChild(box);//box를 make자식으로
+            allmarker.push(marker);
+        })
+        if (markersData.length === 1) {//단일마크
+            const onemarker = markersData[0];
+            const onemarkerMove = new kakao.maps.LatLng(onemarker.latitude, onemarker.longitude);
+
+            map.panTo(onemarkerMove)
+            map.setLevel(3);
+        }
+    }
+
+    // let smokingBooth = []
+
+    // smokdata.addEventListener('click', function () {
+    //     markerData(smokingBooth);
+    // })      //정보 날리기
+    // mydata.addEventListener('click', function () {
+    //     markerData(myMemory)
+    // })
+
+    // 마이페이지에서 저장된 마크 보기
+    const menu = document.querySelectorAll('.category-list')
+    const save = document.querySelectorAll('.side-btn')
+    const make = document.querySelector('#marker')
+    save.forEach(function (me, index) {
+        me.addEventListener('click', function () {
+            make.innerHTML = ''
+            let select = []
+            if (index === 0) {
+                select = testCoords;
+            } else if (index === 1) {
+                select = seoulCoords;
+            }
+            select.forEach(function (item) {
+                const box = document.createElement('div')
+                box.className = 'box'
+                box.innerHTML = `<p>${item.title}</p>`
+                box.addEventListener('click', function () {
+                     window.parent.postMessage('closeRegister', '*');
+                    markerData([item])
+                })
+                make.appendChild(box)
+            })
         })
     })
-})
+}

@@ -90,13 +90,31 @@ window.addEventListener('message', function (e) {
     }
 });
 
-// 사이드바 및 랭킹창 관련 기존 함수들
+// 사이드바
 function toggleSidebar() {
     document.getElementById('side-mypage').classList.toggle('active');
     document.getElementById('sidebar-overlay').classList.toggle('active');
 }
 
+// 랭킹
 function toggleRanking(event) {
-    if (event) event.stopPropagation();
-    document.getElementById('ranking-wrapper').classList.toggle('hide');
+    if (event) {
+        event.stopPropagation(); // 이벤트 버블링 방지
+    }
+    const ranking = document.getElementById('ranking-wrapper');
+    ranking.classList.toggle('hide');
 }
+
+// [추가] 랭킹창이 hide 상태일 때, 삐져나온 영역을 클릭하면 열리도록 설정
+document.addEventListener('DOMContentLoaded', () => {
+    const rankingWrapper = document.getElementById('ranking-wrapper');
+    if (rankingWrapper) {
+        rankingWrapper.addEventListener('click', function (e) {
+            // 1. 만약 hide 클래스가 있다면 (닫혀서 삐져나온 상태라면)
+            if (this.classList.contains('hide')) {
+                // 2. 창을 연다
+                this.classList.remove('hide');
+            }
+        });
+    }
+});
