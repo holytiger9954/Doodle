@@ -82,3 +82,7 @@
     /* 기본 글자색을 네이비로 */
     font-family: 'Pretendard', sans-serif;
 }
+
+/* .box:hover{
+    background-color: var(--point-orange);
+} */

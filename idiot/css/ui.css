@@ -1,0 +1,32 @@
+
+body {
+    display: flex;           
+    flex-direction: row;      
+    gap: 10px;                 
+    
+    overflow-x: auto;          
+    white-space: nowrap;      
+    padding: 10px;            
+    
+    -ms-overflow-style: none;  
+    scrollbar-width: none;    
+    padding: 30px 20px 20px; 
+}
+body::-webkit-scrollbar {
+    display: none;             
+}
+.ui {
+    border:0px;
+    flex-shrink: 0;            
+    display: flex;
+    align-items: center;
+    padding: 8px 12px;
+}
+.ui:hover{
+    cursor: pointer;
+}
+.ui img{
+    width: 20px;
+    height:20px;
+    object-fit: cover;
+}

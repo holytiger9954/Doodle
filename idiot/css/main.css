@@ -178,6 +178,7 @@
     display: flex;
     flex-direction: column;
     gap: 15px;
+    position: relative;
 }
 
 .side-btn {
@@ -207,5 +208,23 @@
 }
 
 .side-btn:hover span {
+    color: white;
+}
+
+
+
+.box{
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    background: #f9f9f9;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 12px;
+}
+.box:hover{
+    background: var(--point-orange);
     color: white;
 }

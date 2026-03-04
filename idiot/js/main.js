@@ -122,17 +122,38 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 //김민권
-window.addEventListener('message',function(e){
-    if(e.data.type === 'newMarker'){
-        if(typeof markerData ==='function'){
-            markerData([e.data.data],true)
+window.addEventListener('message', function (e) {
+    if (e.data.type === 'newMarker') {
+        if (typeof markerData === 'function') {
+            markerData([e.data.data], true)
         }
     }
-    if(e.data.type === 'selectLocation'){
-        if(typeof markerData === 'function'){
+    if (e.data.type === 'selectLocation') {
+        if (typeof markerData === 'function') {
             markerData([e.data.data])
             document.getElementById('ranking-wrapper').classList.add('hide')
             toggleSidebar();
+        }
+    }
+    if (e.data.type === 'ui') {
+        if (typeof markerData === 'function') {
+            const index = e.data.index;
+            let selectData = [];
+            if (index === 0) {
+                selectData = testCoords;
+            } else if (index === 1) {
+                selectData = hospitalCoords;
+            } else if (index === 2) {
+                selectData = gymCoords;
+            } else if (index === 3) {
+                selectData = policeCoords;
+            } else if (index === 4) {
+                selectData = smokingCoords;
+            } else if (index === 5) {
+                selectData = toiletCoords;
+            }
+            console.log("선택된 데이터:", selectData);
+            markerData(selectData);
         }
     }
 })

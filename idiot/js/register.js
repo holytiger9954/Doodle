@@ -17,12 +17,9 @@ function init() {
 }
 
 function bind() {
-
-
-
-
-    let save = document.querySelectorAll('.register-content-btn')
-    save.forEach(function (btn, index) {
+    // 등록페이지
+    let save = document.querySelectorAll('.register-content-btn')//등록 취소버튼
+    save.forEach(function (btn, index) { //버튼 뭐눌럿는지 알려주기
         btn.addEventListener('click', function () {
             const titleInput = document.querySelector('.category')
             const latInput = document.querySelector('.register-lat')
@@ -31,7 +28,7 @@ function bind() {
             const private = document.querySelector('.register-private-btn')
 
             const allInput = !titleInput.value.trim() || !latInput.value.trim() || !longInput.value.trim() || !tagsInput.value.trim()
-            if (index === 0) {
+            if (index === 0) {//등록버튼인덱스
                 if (!allInput) {
                     let tags = [tagsInput.value]
                     if (private.checked) {
