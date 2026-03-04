@@ -66,12 +66,7 @@ smokdata.addEventListener('click', function () {
 mydata.addEventListener('click', function () {
     markerData(myMemory, mymakeimg)
 })
-onesmokdata.addEventListener('click', function () {
-    markerData([마이페이지내객체정보], smokmakeimg);
-})
-onemydata.addEventListener('click',function(){
-    markerData([마이페이지내객체정보],mymakeimg)
-})
+
 // 마이페이지에서 저장된 마크 보기
 my.forEach(function (me, index) {  //버튼구분
     me.addEventListener('click', function () {
@@ -103,7 +98,12 @@ my.forEach(function (me, index) {  //버튼구분
             //box클릭이벤트
             //box는 me의 이벤트를 발생시켯을때만 발생하기에 me이벤트 안에서 행해야함
             box.addEventListener('click', function () {
-                
+                if (index === 0) {
+                    markerData([item], smokmakeimg);
+                } else if (index === 1) {
+                    markerData([item], mymakeimg)
+
+                }
             })
             make.appendChild(box);//box를 make자식으로
         })
