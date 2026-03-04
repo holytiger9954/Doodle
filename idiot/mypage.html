@@ -1,47 +1,28 @@
 <!DOCTYPE html>
 <html lang="ko">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SPOT MAP - Categories</title>
     <link rel="stylesheet" href="./css/common.css">
-    <link rel="stylesheet" href="./css/mypage.css">
+    <link rel="stylesheet" href="./css/main.css"> <style>
+        body { background: white; margin: 0; padding: 0; }
+        /* 마이페이지 전용 추가 스타일이 있다면 여기에 작성 */
+    </style>
+    <script src="/idiot/js/marker.js"></script>
 </head>
-
 <body>
-    <div id="mypage">
-        <div class="mypage">
-            <button type="button" class="mypage-btn">
-                <img src="./img/별.png" alt="찜">
-                <span>찜 목록</span>
-            </button>
-            <button type="button" class="mypage-btn">
-                <img src="./img/병원.png" alt="병원">
-                <span>병원</span>
-            </button>
-            <button type="button" class="mypage-btn">
-                <img src="./img/체육관.png" alt="체육관">
-                <span>체육관</span>
-            </button>
-            <button type="button" class="mypage-btn">
-                <img src="./img/경찰서.png" alt="경찰서">
-                <span>경찰서</span>
-            </button>
-            <button type="button" class="mypage-btn">
-                <img src="./img/담배.png" alt="흡연부스">
-                <span>흡연부스</span>
-            </button>
-            <button type="button" class="mypage-btn">
-                <img src="./img/화장실.png" alt="화장실">
-                <span>공중 화장실</span>
-            </button>
-        </div>
+    <div class="side-header">
+        <h3>MY PAGE</h3>
+        <button class="close-panel" onclick="window.parent.toggleSidebar()">×</button>
     </div>
-
-    <div class="ad">
-        <p>광고 영역 (Doodle Ads)</p>
+    <div class="category-list">
+        <div id="marker" class="marker"></div>
+        <button type="button" class="side-btn"><img src="./img/별.png"> <span>찜 목록</span></button>
+        <button type="button" class="side-btn"><img src="./img/병원.png"> <span>병원</span></button>
+        <button type="button" class="side-btn"><img src="./img/체육관.png"> <span>체육관</span></button>
+        <button type="button" class="side-btn"><img src="./img/경찰서.png"> <span>경찰서</span></button>
+        <button type="button" class="side-btn"><img src="./img/담배.png"> <span>흡연부스</span></button>
+        <button type="button" class="side-btn"><img src="./img/화장실.png"> <span>공중 화장실</span></button>
     </div>
+    <div class="side-ad">광고 영역 (Doodle Ads)</div>
 </body>
-
 </html>
