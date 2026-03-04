@@ -1,6 +1,18 @@
 window.onload = init;
 function init() {
 
+    // 허성범 건드린거
+    // URL에서 파라미터 추출
+    const urlParams = new URLSearchParams(window.location.search);
+    const lat = urlParams.get('lat');
+    const lng = urlParams.get('lng');
+
+    // 입력창에 값 세팅
+    if (lat && lng) {
+        document.querySelector('.register-lat').value = lat;
+        document.querySelector('.register-long').value = lng;
+    }
+
     bind()
 }
 

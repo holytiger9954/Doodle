@@ -1,65 +1,84 @@
+/* 전체를 감싸는 영역 */
 #mypage {
-    /* display: flex;
-
-    justify-content: center;
-    align-items: center; */
     width: 100%;
-    height: 100vh;
-    margin: 0 auto;
+    height: auto;
+    position: absolute;
+    top: 80px;
+    left: 0;
+    z-index: 1500;
+    padding: 15px 0;
+    /* 위아래 여백 살짝 추가 */
+
+    /* [수정] 배경을 투명하게 하고, 아래로 갈수록 자연스럽게 사라지는 그라데이션 */
+    background: linear-gradient(to bottom, rgba(27, 43, 72, 0.1), transparent);
 }
 
+/* 가로 스크롤 바 본체 */
 .mypage {
     display: flex;
     white-space: nowrap;
-    /* 박스 넘어가도 줄바꿈 x */
     overflow-x: auto;
-    /* 스크롤 */
     overflow-y: hidden;
     justify-content: flex-start;
-
-    gap: 10px;
+    align-items: center;
+    gap: 12px;
     width: 100%;
-    height: 100%;
+    padding: 0 20px;
+    /* 양옆 여백 */
+
+    /* 스크롤바 숨기기 */
+    -ms-overflow-style: none;
+    scrollbar-width: none;
 }
 
+.mypage::-webkit-scrollbar {
+    display: none;
+}
+
+/* 버튼 스타일 - 메인 네이비 테두리와 블러 효과 */
 .mypage-btn {
-    border: none;
+    background-color: rgba(255, 255, 255, 0.9);
+    /* 살짝 비치는 흰색 */
+    /* 메인 컬러인 네이비를 얇은 테두리로 활용 */
+    border: 1.5px solid var(--main-blue);
+    border-radius: 20px;
+    padding: 10px 18px;
+    display: flex;
+    align-items: center;
     cursor: pointer;
-    width: 120px;
-    height: 30px;
-}
-    
-.mypage-btn img {
-    width: 20px;
-    height: 20px;
-    object-fit: contain;
-    /* 이미지 비율 유지 */
-    vertical-align: middle;
-    /* 수직정렬 */
-    margin-right: 5px;
+
+    /* [수정] 그림자를 더 깊게 주어 입체감 부여 */
+    box-shadow: 0 4px 12px rgba(27, 43, 72, 0.2);
+    transition: all 0.3s ease;
+    flex-shrink: 0;
+
+    /* 뒤에 지도가 보일 때 고급스러워 보이는 블러 효과 */
+    backdrop-filter: blur(8px);
 }
 
-.ad {
-    position: absolute;
-    bottom: 400px;
-
-    border: 1px solid red;
-
-    width: 100%;
-    height: 30%;
-
+/* 호버 시 포인트 오렌지로 확 변하는 효과 */
+.mypage-btn:hover {
+    background-color: var(--point-orange);
+    border-color: var(--point-orange);
+    transform: translateY(-3px);
+    /* 위로 살짝 들리는 효과 */
+    box-shadow: 0 6px 15px rgba(255, 126, 54, 0.4);
 }
 
-/* .sidebar{
-    position:absolute;
-    bottom: 0;
-    background-color: rgba(213, 208, 208, 0.76);
-    width: 100%;
-    height: 70%;
-    transition: transform 0.3s ease-out;
-    transform: translateY(100%);
+.mypage-btn:hover span {
+    color: white;
 }
 
-.sidevar-open{
-     transform: translateY(0);
-} */
+.mypage-btn:hover img {
+    filter: brightness(0) invert(1);
+    /* 아이콘을 흰색으로 변경 (필요시) */
+}
+
+.mypage-btn span {
+    font-size: 14px;
+    font-weight: 700;
+    /* 글자를 조금 더 두껍게 */
+    color: var(--main-blue);
+    /* 기본 글자색을 네이비로 */
+    font-family: 'Pretendard', sans-serif;
+}

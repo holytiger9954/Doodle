@@ -69,21 +69,152 @@
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
 }
 
+#map {
+    width: 100%;
+    height: 100vh;
+    /* 뷰포트 높이 100% */
+    z-index: 1;
+}
+
+/* 랭킹창 본체 */
 #ranking-wrapper {
     position: absolute;
-    top: 80px;
-    left: 950px;
+    top: 130px;
+    left: 20px;
     z-index: 1000;
-    width: 300px;
-    height: 500px;
+    width: 280px;
+    height: 450px;
     background: white;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    transform: translateX(0);
+    opacity: 1;
 }
 
-#map {
-    width: 100%;
-    height: 100vh; /* 뷰포트 높이 100% */
-    z-index: 1;
+/* 닫혔을 때: 왼쪽으로 밀리지만 40px(손잡이)을 남김 */
+#ranking-wrapper.hide {
+    transform: translateX(-260px);
+    opacity: 0.9;
+    cursor: pointer;
+    /* 마우스 포인터가 손가락 모양으로 변함 */
 }
+
+/* 중요: 닫혔을 때 삐져나온 부분(손잡이)이 클릭 잘 되도록 iframe 클릭 방지 */
+#ranking-wrapper.hide iframe {
+    pointer-events: none;
+}
+
+/* X 버튼: 파란색 헤더 위 우상단 */
+.close-ranking {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 26px;
+    height: 26px;
+    background: rgba(255, 255, 255, 0.3);
+    border: 1px solid white;
+    border-radius: 50%;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    z-index: 1010;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.2s;
+}
+
+/* 닫혔을 때 X 버튼은 숨겨서 깔끔하게 만듦 */
+#ranking-wrapper.hide .close-ranking {
+    opacity: 0;
+    visibility: hidden;
+}
+
+/* 사이드바 기본 스타일 (오른쪽 밖으로 숨김) */
+.side-panel {
+    position: fixed;
+    top: 0;
+    right: -350px;
+    /* 너비만큼 오른쪽으로 밀어둠 */
+    width: 320px;
+    height: 100%;
+    background-color: white;
+    z-index: 2500;
+    transition: right 0.4s ease;
+    /* 스르륵 효과 */
+    box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+}
+
+/* 사이드바가 열렸을 때 클래스 */
+.side-panel.active {
+    right: 0;
+}
+
+/* 배경 어둡게 */
+#sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 2400;
+}
+
+#sidebar-overlay.active {
+    display: block;
+}
+
+/* 사이드바 내부 버튼 디자인 */
+.side-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    border-bottom: 2px solid var(--main-blue);
+    padding-bottom: 10px;
+}
+
+.category-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.side-btn {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    background: #f9f9f9;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.side-btn:hover {
+    background: var(--point-orange);
+    color: white;
+}
+
+.side-btn img {
+    width: 20px;
+    margin-right: 15px;
+}
+
+.side-btn span {
+    font-weight: 600;
+    color: var(--main-blue);
+}
+
+.side-btn:hover span {
+    color: white;
+}
+
