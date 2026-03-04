@@ -45,14 +45,14 @@ function bind() {
                         latitude: Number(latInput.value),
                         longitude: Number(longInput.value),
                     }
-                    window.parent.postMessage({
+                    window.parent.postMessage({ //메인js에 보내기
                         type: 'newMarker',
                         data: savedata
                     },'*');
                     
                     if (!private.checked) {
                         alert('공개 등록되었습니다')
-                        window.parent.postMessage('closeRegister', '*');
+                        window.parent.postMessage('closeRegister', '*');//아이프레임창 닫기
                     } if (private.checked) {
                         alert('비공개 등록되었습니다')
                         window.parent.postMessage('closeRegister', '*');

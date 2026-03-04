@@ -11,31 +11,38 @@ function init() {
 //     })
 // })
 
-  let allmarker = [];
-    //정보 받기
-    function markerData(markersData) { //마크 관리 함수
-
+let allmarker = [];
+let registermarker = [];
+//정보 받기
+function markerData(markersData, registersave = false) { //마크 관리 함수
+    if (!registersave) {
         allmarker.forEach(function (d) {
-            d.setMap(null); //화면에 마크 초기화
+            if (!registermarker.includes(d)) {
+                d.setMap(null); //화면에 마크 초기화
+            }
         })
-        allmarker = []; //배열로 담을 준비
-        markersData.forEach(function (item) { //정보 배열만큼 생성
-            const marker = new kakao.maps.Marker({//전달받은 좌표
-                position: new kakao.maps.LatLng(item.latitude, item.longitude),
-                map: map //이동
-            })
-            allmarker.push(marker);
-        })
-        if (markersData.length === 1) {//단일마크
-            const onemarker = markersData[0];
-            const onemarkerMove = new kakao.maps.LatLng(onemarker.latitude, onemarker.longitude);
-
-            map.panTo(onemarkerMove)
-            map.setLevel(1);
-        }
+        allmarker = [...registermarker]
     }
+    allmarker = []; //배열로 담을 준비
 
-function bind(){
+
+    markersData.forEach(function (item) { //정보 배열만큼 생성
+        const marker = new kakao.maps.Marker({//전달받은 좌표
+            position: new kakao.maps.LatLng(item.latitude, item.longitude),
+            map: map //이동
+        })
+        allmarker.push(marker);
+    })
+    if (markersData.length === 1) {//단일마크
+        const onemarker = markersData[0];
+        const onemarkerMove = new kakao.maps.LatLng(onemarker.latitude, onemarker.longitude);
+
+        map.panTo(onemarkerMove)
+        map.setLevel(1);
+    }
+}
+
+function bind() {
     //임시좌표
     const testCoords = [
         { title: "천안시청 인근", latitude: 36.815129, longitude: 127.113894 },
@@ -62,7 +69,7 @@ function bind(){
         { title: "동대문 디자인플라자(DDP)", latitude: 37.566524, longitude: 127.009224 }
     ];
 
-  
+
 
     // let smokingBooth = []
 
@@ -92,8 +99,10 @@ function bind(){
                 box.className = 'box'
                 box.innerHTML = `<p>${item.title}</p>`
                 box.addEventListener('click', function () {
-                    markerData([item])
-                    ranking.classList.add('hide')
+                    window.parent.postMessage({
+                        type: 'selectLocation',
+                        data: item
+                    },'*')
                 })
                 make.appendChild(box)
             })

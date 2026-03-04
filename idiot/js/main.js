@@ -49,11 +49,13 @@ function bindRegisterEvent() {
     if (!saveBtn) return;
 
     saveBtn.addEventListener('click', () => {
+        const rankingWrapper = document.getElementById('ranking-wrapper');//김민권
         isRegisterMode = !isRegisterMode;
         if (isRegisterMode) {
             saveBtn.style.backgroundColor = "#e67e22";
             saveBtn.innerText = "📍 지도를 클릭하세요";
             map.setCursor('crosshair');
+            rankingWrapper.classList.add('hide')//김민권
         } else {
             resetRegisterMode();
         }
@@ -122,9 +124,15 @@ document.addEventListener('DOMContentLoaded', () => {
 //김민권
 window.addEventListener('message',function(e){
     if(e.data.type === 'newMarker'){
-        const newCoord = e.data.data;
         if(typeof markerData ==='function'){
-            markerData([newCoord])
+            markerData([e.data.data],true)
+        }
+    }
+    if(e.data.type === 'selectLocation'){
+        if(typeof markerData === 'function'){
+            markerData([e.data.data])
+            document.getElementById('ranking-wrapper').classList.add('hide')
+            toggleSidebar();
         }
     }
 })
