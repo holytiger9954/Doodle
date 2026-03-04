@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="./css/report.css">
+</head>
+
+<body>
+    <div id="dd-overlay" class="dd-overlay">
+        <div class="dd-auth-box" >
+            <span class="close-btn" onclick="closeLogin()">&times;</span>
+            <div id="report-section">
+                <h2 style="color:#222; margin-bottom:20px;">신고사유</h2>
+                <form onsubmit="">
+                    <select name="신고사유" class="report-reason">
+                        <option value="spam">스팸/영리적 홍보</option>
+                        <option value="danger">위험한 장소</option>
+                        <option value="different">적힌태그와 다름</option>
+                        <option value="etc">기타 (직접 입력)</option>
+                    </select>
+                    <textarea name="detail-reason" id="detail-reason" placeholder="상세사유를 입력해주세요.(최대 300자)" maxlength="300"></textarea>
+                    <button type="submit" class="auth-submit-btn report-btn">신고</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
