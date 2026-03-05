@@ -1,71 +1,64 @@
-#report-section {
-    overflow: hidden;
-}
-#report-section select {
-    margin: 10px 0;
-    height: 30px;
-    border: none;
-    background: var(--point-orange);
-    border-radius: 4px;
-    color: white;
-}
-#report-section select:focus {
-    outline: none;
-}
-#report-section textarea {
-    margin: 10px 0;
-    height: 150px;
-}
-/* 1. 메인 박스: 상하좌우 여백을 동일하게 (25px로 통일 추천) */
 .dd-auth-box {
+    background: var(--main-blue) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px var(--soft-black);
     position: relative;
     box-sizing: border-box;
+    /* 고정 너비를 삭제하여 common.css의 크기 설정을 따르도록 함 */
 }
 
-/* 2. 닫기 버튼: 우측 상단 모서리 여백에 맞춰 배치 */
+/* 2. 닫기 버튼: 원래 위치(20px/20px)로 복구 */
 .close-btn {
     position: absolute;
-    top: 20px;    /* 위쪽 끝에서 20px */
-    right: 20px;  /* 오른쪽 끝에서 20px (대칭의 핵심) */
+    top: 20px;    /* 사용자님 원본값 */
+    right: 20px;  /* 사용자님 원본값 */
+    color: var(--text-white) !important;
     line-height: 1;
-    color: #333;
 }
 
-/* 3. 제목: 상단 여백을 없애고 아래 간격만 조절 */
+/* 3. 제목: 원래 마진값으로 복구 */
 #report-section h2 {
     margin-top: 0; 
-    margin-bottom: 25px; /* 다음 요소(select)와의 간격 */
+    margin-bottom: 25px; /* 사용자님 원본값 */
+    color: var(--text-white) !important;
     font-size: 22px;
     text-align: left;
 }
 
-/* 4. 내부 요소들 간격 통일 */
-#report-section select,
-#report-section textarea {
+/* 4. 내부 요소: 원래 간격 유지 + 색상 적용 */
+#report-section select {
+    border-radius: 4px;
     width: 100%;
-    margin-bottom: 15px; /* 요소들 사이의 간격을 일정하게 */
-    box-sizing: border-box;
-}
-
-/* 5. 마지막 버튼: 아래 여백(margin) 제거 */
-.report-btn {
-    width: 100%;
-    height: 45px;
-    margin-bottom: 0 !important; /* 박스 하단 패딩과 맞물리도록 마진 제거 */
+    height: 25px;
+    margin-bottom: 15px;
+    background: var(--point-orange) !important;
+    color: white !important;
     border: none;
-    border-radius: 6px;
-    background-color: var(--point-orange) !important;
-    color: white;
-    font-weight: bold;
-    cursor: pointer;
 }
 
-#detail-reason:focus {
+#report-section textarea {
+    height: 150px;
+    width: 100%;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-white) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 5px;
+    resize: none;
     outline: none;
 }
 
-#detail-reason::placeholder {
-    font-size: 0.9em;     /* 원하는 크기로 조절 */
-    color: #999;        /* 보통 placeholder는 흐리게 처리하니까요! */
-    font-weight: 400;   /* 굵기도 조절 가능 */
+#report-section textarea::placeholder {
+    color: #999;
+    font-size: 0.92em;
+    font-weight: 580;
+}
+
+/* 5. 마지막 버튼: 하단 마진 제거 및 오렌지색 적용 */
+.report-btn {
+    width: 100%;
+    margin-bottom: 0 !important;
+    background-color: var(--point-orange) !important;
+    color: var(--text-white);
+    font-weight: bold;
 }

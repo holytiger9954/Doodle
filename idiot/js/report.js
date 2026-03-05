@@ -5,6 +5,6 @@ detailReason.addEventListener('focus', function() {
 });
 detailReason.addEventListener('blur', function() {
     if (this.value === '') {
-        this.placeholder = '상세사유를 입력해주세요.(최대 300자)';
+        this.placeholder = '상세사유를 적어주세요.(최대 300자)';
     }
 });
