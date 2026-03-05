@@ -13,9 +13,12 @@ function init() {
 
 let allmarker = [];
 let registermarker = [];//등록마커
+//마커를 삭제 생성 필터역할을 다하는 함수
 //정보 받기[마크핵심]               //register구별메인.js에서 true보내줌
 function markerData(markersData, registersave = false) {
     console.log("전달받은 데이터:", markersData);//마크 관리 함수
+    var bounds = new kakao.maps.LatLngBounds();
+    //동록마커유지
     if (!registersave) {//등록엔 반응안함 메인.js확인
         allmarker.forEach(function (d) {//지도에서 지우려는 마크에 등록 마크가 포람 되어있는지 확인        
             if (!registermarker.includes(d)) {//이게 없으면 펄스가 왔을때 등록한 마커를 다 지움
@@ -28,13 +31,20 @@ function markerData(markersData, registersave = false) {
 
 
     markersData.forEach(function (item) { //배열 만큼 반복
+        const position = new kakao.maps.LatLng(item.latitude, item.longitude);
         const marker = new kakao.maps.Marker({//전달받은 좌표
-            position: new kakao.maps.LatLng(item.latitude, item.longitude),
+            position: position,
             map: map //이동
         })
         allmarker.push(marker);//배열로저장
+
+        bounds.extend(position);
     })
-    if (markersData.length === 1) {//단일마크
+    //여기까지가 데이터를 넣는과정
+    if (markersData.length > 0) {
+        map.setBounds(bounds);
+    }
+    if (markersData.length === 1) {//마크가 하나만 찍히면
         const onemarker = markersData[0];
         const onemarkerMove = new kakao.maps.LatLng(onemarker.latitude, onemarker.longitude);
 
@@ -158,8 +168,8 @@ function bind() {
 
                     box.addEventListener('click', function () {
                         window.parent.postMessage({
-                            type: 'selectLocation',
-                            data: item
+                            type: 'selectLocation',//메인에서 구별하기 위한 별명
+                            data: item//메인에서 받을 데이터
                         }, '*')
                     })
                     make.appendChild(box)

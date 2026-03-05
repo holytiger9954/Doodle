@@ -43,8 +43,8 @@ function bind() {
                         longitude: Number(longInput.value),
                     }
                     window.parent.postMessage({ //메인js에 보내기
-                        type: 'newMarker',
-                        data: savedata
+                        type: 'newMarker', //메인에서 구별하기 위한 별명
+                        data: savedata //메인에서 받을 데이터
                     },'*');
                     
                     if (!private.checked) {

@@ -122,20 +122,21 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 //김민권
+//맵이 메인에 있기때문에 마커를 띄우는 작업을 메인을 통해서 함
 window.addEventListener('message', function (e) {
-    if (e.data.type === 'newMarker') {
+    if (e.data.type === 'newMarker') { //register.js에서옴
         if (typeof markerData === 'function') {
-            markerData([e.data.data], true)
-        }
+            markerData([e.data.data], true)//register.js 받은 데이터를
+        }                                  //true를 붙혀서 마커에 보냄
     }
-    if (e.data.type === 'selectLocation') {
+    if (e.data.type === 'selectLocation') { //marker.js에서옴
         if (typeof markerData === 'function') {
             markerData([e.data.data])
             document.getElementById('ranking-wrapper').classList.add('hide')
             toggleSidebar();
         }
     }
-    if (e.data.type === 'ui') {
+    if (e.data.type === 'ui') { //ui.js에서옴
         if (typeof markerData === 'function') {
             const index = e.data.index;
             let selectData = [];
