@@ -242,5 +242,29 @@ body {
     background: transparent;
     width: 20px;
     border: none;
+}
 
+.bottom-sheet {
+    position: fixed;
+    bottom: -100%; /* 처음엔 화면 아래에 숨김 */
+    left: 0;
+    width: 100%;
+    height: 700px;
+    background-color: white;
+    z-index: 9999;
+    transition: bottom 0.3s ease; /* 0.3초 동안 부드럽게 올라옴 */
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+    box-shadow: 0 -5px 15px rgba(0,0,0,0.2);
+}
+
+/* 활성화되었을 때 (올라왔을 때) */
+.bottom-sheet.active {
+    bottom: 0;
+}
+
+.sheet-content {
+    padding: 20px;
+    overflow-y: auto;
+    height: 100%;
 }

@@ -3,6 +3,8 @@ function init() {
     bind()
 }
 
+//배열 전체뿌려서 줌조절하는거 마커 클릭 이벤트 이해못함
+
 //x버튼
 // closed.forEach(function (btn) {
 //     btn.addEventListener('click', function () {
@@ -55,49 +57,59 @@ function markerData(markersData, registersave = false) {
             } else if (item.Category.includes('흡연부스')) {
                 mapMarker = 'infoT.html';
             } else if (item.Category.includes('공중화장실')) {
-                mapMarker = 'info.html';
+                mapMarker = 'infoG.html';
             }
             /////////////////////여기부터이해못함///////////////////////////////////
             //다른파일에 있는 창을 가져오기 위해 fetch사용
-            fetch(`./${mapMarker}`)
+            fetch('./' + mapInformation)
                 .then(function (response) {
                     return response.text();
                 })
                 .then(function (html) {
-                    const overlay = new kakao.maps.CustomOverlay({
-                        content: html,
-                        map: map,
-                        position: marker.getPosition(),
-                        yAnchor: 1.2
-                    });
+                    // [중요] main.html에 있는 ID와 정확히 일치해야 합니다.
+                    var sheet = document.getElementById('bottom-sheet');
+                    var dataContainer = document.getElementById('sheet-data');
 
-                    mapInformation = overlay;
+                    if (!sheet || !dataContainer) {
+                        console.error("바텀시트 엘리먼트를 찾을 수 없습니다.");
+                        return;
+                    }
 
-                    const contentNode = document.createElement('div');
+                    var contentNode = document.createElement('div');
                     contentNode.innerHTML = html;
-                    const CategoryEl = contentNode.querySelector('#info-title')
-                    if (CategoryEl) {
-                        CategoryEl.innerText = item.title;
+
+                    // 정보 입력
+                    var titleEl = contentNode.querySelector('#info-title');
+                    if (titleEl) {
+                        titleEl.innerText = item.title;
                     }
-                    const addrEl = contentNode.querySelector('#info-address')
+
+                    var addrEl = contentNode.querySelector('#info-address');
                     if (addrEl && item.address) {
-                        addrEl.innerText = '주소 : ' + item.address
+                        addrEl.innerText = '주소 : ' + item.address;
                     }
-                    overlay.setContent(contentNode);
+
+                    // 바텀시트 교체 및 노출
+                    dataContainer.innerHTML = '';
+                    dataContainer.appendChild(contentNode);
+                    sheet.classList.add('active');
                 })
-        })
+                .catch(function (error) {
+                    console.error("파일 로드 중 오류 발생:", error);
+                });
+        });
         allmarker.push(marker);//배열로저장
 
         bounds.extend(position);
     })
 
     window.closeOverlay = function () {
-        if (mapInformation) {
-            mapInformation.setMap(null);
-            mapInformation = null;
+        const sheet = document.getElementById('bottom-sheet');
+        if (sheet) {
+            sheet.classList.remove('active');
         }
     };
-////////////////////////////////여기까지 이해못함/////////////////////////////////
+    ////////////////////////////////여기까지 이해못함/////////////////////////////////
     //여기까지가 데이터를 넣는과정
     if (markersData.length > 0) {
         map.setBounds(bounds);

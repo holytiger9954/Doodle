@@ -38,9 +38,10 @@ function bind() {
                     }
                     //필터로 비공개를 걸러야함
                     const savedata = { //서버에 보낼 데이터 양식
-                        title: titleInput.value,
+                        title: tagsInput.value,
                         latitude: Number(latInput.value),
                         longitude: Number(longInput.value),
+                        Category: titleInput.value
                     }
                     window.parent.postMessage({ //메인js에 보내기
                         type: 'newMarker', //메인에서 구별하기 위한 별명
