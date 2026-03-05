@@ -188,51 +188,68 @@ const toiletCoords = [
 
 
 function bind() {
+    var save = document.querySelectorAll('.side-btn');
+    var make = document.querySelector('#marker');
+    var lastindex = -1;
 
-    // 마이페이지에서 저장된 마크 보기
-    const save = document.querySelectorAll('.side-btn')
-    const make = document.querySelector('#marker')
-    let lastindex = -1; //초기화 버튼
     save.forEach(function (me, index) {
         me.addEventListener('click', function () {
-            if (lastindex === index) {//인덱스가 다르면 box 초기화
-                make.innerHTML = ''
-                make.style.display = 'none'
+
+            // 1. 같은 버튼 클릭 시 닫기 (샌드위치 뺌)
+            if (lastindex === index) {
+                make.classList.remove('show');
+                setTimeout(function () {
+                    make.style.display = 'none';
+                    make.innerHTML = '';
+                }, 400);
                 lastindex = -1;
                 return;
             }
-            make.innerHTML = ''
-            make.style.display = 'block'
-            let select = []
-            if (index === 0) {
-                select = testCoords;
-            } else if (index === 1) {
-                select = hospitalCoords;
-            } else if (index === 2) {
-                select = gymCoords;
-            } else if (index === 3) {
-                select = policeCoords;
-            } else if (index === 4) {
-                select = smokingCoords;
-            } else if (index === 5) {
-                select = toiletCoords;
-            }
-            select.forEach(function (item) {
-                const box = document.createElement('div')
-                box.className = 'box'
-                me.insertAdjacentElement('afterend', make)
-                lastindex = index; //인덱스를 같게해줌
-                box.innerHTML = `<p>${item.title}</p>`
+
+            // 2. 초기화
+            make.classList.remove('show');
+            make.innerHTML = '';
+
+            // [중요] 샌드위치처럼 끼어들기 위한 스타일 강제 설정
+            make.style.display = 'block';
+            make.style.width = '100%';
+            make.style.order = '0'; // 순서 초기화
+
+            lastindex = index;
+
+            var select = [];
+            if (index === 0) select = testCoords;
+            else if (index === 1) select = hospitalCoords;
+            else if (index === 2) select = gymCoords;
+            else if (index === 3) select = policeCoords;
+            else if (index === 4) select = smokingCoords;
+            else if (index === 5) select = toiletCoords;
+
+            // 3. 목록(박스) 생성
+            select.forEach(function (item, i) {
+                var box = document.createElement('div');
+                box.className = 'box';
+                box.style.animationDelay = (i * 0.05) + 's';
+                box.innerHTML = '<p>' + item.title + '</p>';
 
                 box.addEventListener('click', function () {
                     window.parent.postMessage({
-                        type: 'selectLocation',//메인에서 구별하기 위한 별명
-                        data: item//메인에서 받을 데이터
-                    }, '*')
-                })
-                make.appendChild(box)
-                makeflag = true;
-            })
-        })
-    })
+                        type: 'selectLocation',
+                        data: item
+                    }, '*');
+                });
+                make.appendChild(box);
+            });
+
+            // 4. [핵심] 샌드위치 위치 선정
+            // 클릭한 버튼(me) 바로 뒤에 목록(make)을 배치합니다.
+            // 부모가 flex-direction: column 상태여야 버튼 사이에 쏙 들어갑니다.
+            me.insertAdjacentElement('afterend', make);
+
+            // 5. 스르륵 열기
+            setTimeout(function () {
+                make.classList.add('show');
+            }, 10);
+        });
+    });
 }

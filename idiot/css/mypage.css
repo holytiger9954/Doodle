@@ -1,90 +1,179 @@
-/* 전체를 감싸는 영역 */
+/* mypage.css */
 
-#mypage {
-    width: 100%;
-    height: auto;
-    position: absolute;
-    top: 80px;
-    left: 0;
-    z-index: 1500;
-    padding: 15px 0;
-    /* 위아래 여백 살짝 추가 */
+/* 1. 기본 배경 설정: iframe 내부이므로 투명하게 */
+/* 1. 사이드바 전체에 스크롤 적용 */
+body#side {
+    background: transparent !important;
+    margin: 0;
+    padding: 0;
+    font-family: 'Pretendard', sans-serif;
+    color: white;
 
-    /* [수정] 배경을 투명하게 하고, 아래로 갈수록 자연스럽게 사라지는 그라데이션 */
-    background: linear-gradient(to bottom, rgba(27, 43, 72, 0.1), transparent);
-
-
+    /* [수정] 세로 스크롤 허용, 가로는 차단 */
+    overflow-y: auto;
+    overflow-x: hidden;
+    height: 100vh;
+    /* 화면 높이 꽉 채우기 */
 }
 
-/* 가로 스크롤 바 본체 */
-.mypage {
+/* 2. 스크롤바 디자인 (크롬, 사파리, 엣지) */
+body#side::-webkit-scrollbar {
+    width: 6px;
+    /* 스크롤바 두께 */
+}
+
+body#side::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    /* 바닥 배경 */
+}
+
+body#side::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    /* 스크롤바 색상 */
+    border-radius: 10px;
+}
+
+body#side::-webkit-scrollbar-thumb:hover {
+    background: var(--point-orange);
+    /* 마우스 올리면 포인트 컬러로! */
+}
+
+/* 2. 헤더 영역 */
+.side-header {
     display: flex;
-    white-space: nowrap;
-    overflow-x: auto;
-    overflow-y: hidden;
-    justify-content: flex-start;
+    justify-content: space-between;
     align-items: center;
-    gap: 12px;
-    width: 100%;
-    padding: 0 20px;
-    /* 양옆 여백 */
-
-    /* 스크롤바 숨기기 */
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    padding: 30px 20px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.mypage::-webkit-scrollbar {
-    display: none;
-}
-
-/* 버튼 스타일 - 메인 네이비 테두리와 블러 효과 */
-.mypage-btn {
-    /* 살짝 비치는 흰색 */
-    /* 메인 컬러인 네이비를 얇은 테두리로 활용 */
-    border: 1.5px solid var(--main-blue);
-    border-radius: 20px;
-    padding: 10px 18px;
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-
-    /* [수정] 그림자를 더 깊게 주어 입체감 부여 */
-    box-shadow: 0 4px 12px rgba(27, 43, 72, 0.2);
-    transition: all 0.3s ease;
-    flex-shrink: 0;
-
-    /* 뒤에 지도가 보일 때 고급스러워 보이는 블러 효과 */
-    backdrop-filter: blur(8px);
-}
-
-/* 호버 시 포인트 오렌지로 확 변하는 효과 */
-.mypage-btn:hover {
-    background-color: var(--point-orange);
-    border-color: var(--point-orange);
-    transform: translateY(-3px);
-    /* 위로 살짝 들리는 효과 */
-    box-shadow: 0 6px 15px rgba(255, 126, 54, 0.4);
-}
-
-.mypage-btn:hover span {
+.side-header h1 {
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: 1px;
+    margin: 0;
     color: white;
 }
 
-.mypage-btn:hover img {
-    filter: brightness(0) invert(1);
-    /* 아이콘을 흰색으로 변경 (필요시) */
+.close-panel {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    font-size: 24px;
+    cursor: pointer;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: 0.3s;
 }
 
-.mypage-btn span {
-    font-size: 14px;
-    font-weight: 700;
-    /* 글자를 조금 더 두껍게 */
+.close-panel:hover {
+    background: var(--point-orange);
+    transform: rotate(90deg);
+}
+
+/* 3. 카테고리 리스트 (6개 버튼 영역) */
+/* 3. 샌드위치 효과 보정 */
+.category-list.side {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 20px;
+    /* 내용이 아래에 딱 붙지 않게 여유 공간 */
+    padding-bottom: 100px;
+}
+
+.side-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 15px 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.side-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: var(--point-orange);
+    transform: translateY(-3px);
+}
+
+.side-btn img {
+    width: 28px;
+    height: 28px;
+}
+
+.side-btn span {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* 4. 부드러운 열고 닫기 애니메이션 핵심 */
+/* 4. 부드러운 열고 닫기 애니메이션 핵심 */
+
+/* 리스트 컨테이너: 가로가 아닌 세로(일자)로 쌓이도록 설정 */
+#marker {
+    display: block;
+    width: 100%;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.4s ease-in-out;
+}
+
+#marker.show {
+    /* 열렸을 때 높이 제한을 없애서 내용이 다 나오게 함 */
+    max-height: 2000px;
+}
+
+/* 개별 리스트 박스: 일자(Row) 형태 */
+.box {
+    background: white;
+    border-radius: 10px;
+    padding: 15px 20px;
+    margin-bottom: 12px;
+    /* 항목 사이 간격 */
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+
+    /* 애니메이션 */
+    opacity: 0;
+    transform: translateY(-10px);
+    animation: slideIn 0.3s ease-out forwards;
+
+    /* 한 줄을 다 차지하게 함 */
+    width: 100%;
+    display: block;
+    box-sizing: border-box;
+}
+
+.box:hover {
+    background: var(--point-orange);
+    transform: scale(1.02);
+}
+
+.box p {
+    margin: 0;
+    font-size: 15px;
     color: var(--main-blue);
-    /* 기본 글자색을 네이비로 */
-    font-family: 'Pretendard', sans-serif;
+    font-weight: 700;
 }
 
-/* .box:hover{
-    background-color: var(--point-orange);
-} */
+.box:hover p {
+    color: white;
+}
+
+@keyframes slideIn {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
