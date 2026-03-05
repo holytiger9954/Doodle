@@ -1,3 +1,8 @@
+body{
+    background-color: var(--soft-black);
+}
+
+
 /* 헤더 스타일 */
 .main-header {
     position: absolute;
@@ -131,7 +136,7 @@
     top: 0;
     right: -350px;
     /* 너비만큼 오른쪽으로 밀어둠 */
-    width: 320px;
+    width: 340px;
     height: 100%;
     background-color: white;
     z-index: 2500;
@@ -140,7 +145,6 @@
     box-shadow: -5px 0 15px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    padding: 20px;
 }
 
 /* 사이드바가 열렸을 때 클래스 */
@@ -172,6 +176,9 @@
     margin-bottom: 30px;
     border-bottom: 2px solid var(--main-blue);
     padding-bottom: 10px;
+    color: white;
+    padding-left: 20px;
+
 }
 
 .category-list {
@@ -179,17 +186,19 @@
     flex-direction: column;
     gap: 15px;
     position: relative;
+   
 }
 
 .side-btn {
     display: flex;
     align-items: center;
-    padding: 12px 15px;
-    border: 1px solid #eee;
+    padding: 4px 15px;
+    border: 1px solid transparent !important;
     border-radius: 10px;
-    background: #f9f9f9;
+    background: transparent !important;
     cursor: pointer;
     transition: 0.2s;
+    padding-left: 20px;
 }
 
 .side-btn:hover {
@@ -205,26 +214,61 @@
 .side-btn span {
     font-weight: 600;
     color: var(--main-blue);
+    color: white;
+    padding-left: 0px;
 }
 
 .side-btn:hover span {
     color: white;
 }
 
-
+#ucon{
+    position: absolute;   
+    top: 60px;            
+    left: 0%;            
+    z-index: 1500;       
+    height:55px;
+    width:100%;
+    background: transparent; 
+    
+    
+}
+#ucon iframe{
+    pointer-events: auto;
+}
 
 .box{
     display: flex;
     align-items: center;
     padding: 12px 15px;
-    border: 1px solid #eee;
+    border: 1px solidtransparent !important;
     border-radius: 10px;
-    background: #f9f9f9;
+    background: transparent !important;
     cursor: pointer;
     transition: 0.2s;
     font-size: 12px;
+    color:#eee;
+    padding-left: 40px;
 }
 .box:hover{
     background: var(--point-orange);
     color: white;
+}
+
+.side-ad{
+    padding-top:5px;
+    padding-left:20px;
+    color: white;
+
+}
+
+.close-panel{
+    position: absolute;
+    top:0px;
+    right: 0px;
+    color: white;
+    background: transparent; 
+    width:20px;
+    border: none;
+    
 }

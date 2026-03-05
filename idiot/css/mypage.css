@@ -1,4 +1,5 @@
 /* 전체를 감싸는 영역 */
+
 #mypage {
     width: 100%;
     height: auto;
@@ -11,6 +12,8 @@
 
     /* [수정] 배경을 투명하게 하고, 아래로 갈수록 자연스럽게 사라지는 그라데이션 */
     background: linear-gradient(to bottom, rgba(27, 43, 72, 0.1), transparent);
+
+
 }
 
 /* 가로 스크롤 바 본체 */
@@ -37,7 +40,6 @@
 
 /* 버튼 스타일 - 메인 네이비 테두리와 블러 효과 */
 .mypage-btn {
-    background-color: rgba(255, 255, 255, 0.9);
     /* 살짝 비치는 흰색 */
     /* 메인 컬러인 네이비를 얇은 테두리로 활용 */
     border: 1.5px solid var(--main-blue);
