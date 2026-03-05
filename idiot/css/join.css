@@ -6,3 +6,8 @@
     width: 280px;
     margin-left: 3px;
 }
+
+.message {
+    font-size: 0.8em;
+    color: red;
+}

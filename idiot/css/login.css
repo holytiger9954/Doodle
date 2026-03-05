@@ -23,6 +23,11 @@ a:active {
     margin: 7px 0;
 }
 
+.message {
+    font-size: 0.8em;
+    color: red;
+}
+
 /* h2 {
     margin-left: 16px;
 } */
