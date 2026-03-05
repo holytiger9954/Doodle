@@ -1,0 +1,31 @@
+나중에 바꿀거
+
+// marker.js 수정 예시
+select.forEach(function (item) {
+    const box = document.createElement('div');
+    box.className = 'box';
+    box.innerHTML = `<p>${item.title}</p>`;
+    
+    box.addEventListener('click', function () {
+        // 1. 부모 창(main.html)의 map 객체와 kakao 객체에 접근
+        const parentMap = window.parent.map;
+        const kakao = window.parent.kakao;
+
+        if (parentMap && kakao) {
+            // 2. 이동할 좌표 생성
+            const moveLatLng = new kakao.maps.LatLng(item.latitude, item.longitude);
+            
+            // 3. 지도 이동 및 레벨 조정
+            parentMap.panTo(moveLatLng);
+            parentMap.setLevel(3);
+
+            // 4. (선택 사항) 이동 후 사이드바 닫기
+            if (window.parent.toggleSidebar) {
+                window.parent.toggleSidebar();
+            }
+        } else {
+            console.error("부모 창의 지도 객체를 찾을 수 없습니다.");
+        }
+    });
+    make.appendChild(box);
+});

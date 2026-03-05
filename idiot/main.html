@@ -16,7 +16,8 @@
     <header class="main-header">
         <a href="main.html" class="logo">SPOT MAP 📍</a>
         <div class="header-search">
-            <button class="search-btn">검색 🔍</button>
+            <iframe src="search.html" style="width: 380px; height: 45px; border: none; background: transparent;"
+                scrolling="no"></iframe>
         </div>
         <div class="header-icons">
             <button id="btn" class="menu-toggle-btn" onclick="toggleSidebar()">☰</button>
@@ -43,7 +44,7 @@
     <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
     <button id="savebtn" class="action-btn-save">📍 장소 등록</button>
-    
+
     <div id="register-modal" class="dd-overlay hidden">
         <div class="register-modal-content" style="width: 450px; height: 600px; position: relative;">
             <iframe id="register-iframe" src=""
