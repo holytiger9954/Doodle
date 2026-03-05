@@ -44,7 +44,7 @@ joinform.addEventListener('submit', function (evt) {
     evt.preventDefault();
 
     localStorage.setItem('savedId', joinId.value);
-    localStorage.setItem('savedPw1', joinPw1.value);
+    localStorage.setItem('savedPw', joinPw1.value);
     localStorage.setItem('savedNn', joinNn.value);
     alert("회원가입이 완료되었습니다.")
     location.href = "./login.html"

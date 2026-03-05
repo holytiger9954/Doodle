@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="kr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="./css/join.css">
+</head>
+
+<body>
+    <div id="dd-overlay" class="dd-overlay">
+        <div class="dd-auth-box">
+            <span class="close-btn">&times;</span>
+            <div id="change-pw-section">
+                <h2 style="margin-bottom: 20px;">비밀번호 변경</h2>
+                <form onsubmit="">
+                    <input type="text" id="input-dd-id" class="dd-input" placeholder="ID"
+                        required minlength="4" maxlength="12" pattern="^[a-zA-Z][a-zA-Z0-9]*$">
+                    <p class="message" id="wo-id"></p>
+                    <input type="password" id="input-dd-pw" class="dd-input" placeholder="기존 비밀번호"
+                        required minlength="4" maxlength="12" pattern="^[a-zA-Z][a-zA-Z0-9]*$">
+                    <p class="message" id="wo-pw"></p>
+                    <input type="password" id="input-dd-new-pw1" class="dd-input"
+                        placeholder="새 비밀번호" required minlength="4" maxlength="12"
+                        pattern="^[a-zA-Z][a-zA-Z0-9]*$">
+                    <p class="message" id="wo-pw1"></p>
+                    <input type="password" id="input-dd-new-pw2" class="dd-input"
+                        placeholder="새 비밀번호 확인" required minlength="4" maxlength="12"
+                        pattern="^[a-zA-Z][a-zA-Z0-9]*$">
+                    <p class="message" id="wo-pw2"></p>
+                    <button type="submit" class="auth-submit-btn">비밀번호 변경</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="./js/changePw.js" defer></script>
+</body>
+
+</html>

@@ -20,7 +20,7 @@ h2 {
     background: rgba(255, 255, 255, 0.05) !important;
     color: var(--text-white) !important;
     border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .dd-input:focus {
@@ -30,7 +30,6 @@ h2 {
 
 /* 제출 버튼: common.css 버튼 기반에 로그인 전용 여백 추가 */
 .auth-submit-btn {
-    margin-top: 10px;
     color: var(--text-white);
     background: var(--point-orange) !important;
 }
@@ -51,13 +50,22 @@ h2 {
 a, a:visited {
     display: inline-block;
     color: var(--text-white) !important;
-    font-size: 0.85rem;
+    font-size: 0.75rem;
     font-weight: 700;
-    margin-top: 20px;
+    margin-top: 17px;
     text-decoration: none;
     transition: 0.3s;
 }
 
 a:hover {
     color: var(--point-orange) !important;
+}
+.a-parent {
+    margin-top: 0px;
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+.close-btn {
+    color: var(--text-white);
 }

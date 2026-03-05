@@ -7,10 +7,10 @@ loginform.addEventListener('submit', function (evt) {
     const loginPw = document.querySelector('#input-dd-password').value;
 
     const savedId = localStorage.getItem('savedId');
-    const savedPw1 = localStorage.getItem('savedPw1');
+    const savedPw = localStorage.getItem('savedPw');
     const savedNn = localStorage.getItem('savedNn');
 
-    if (loginId === savedId && loginPw === savedPw1) {
+    if (loginId === savedId && loginPw === savedPw) {
     //    alert(`${savedNn}님. 환영합니다!`);
         location.href = "./main.html"
     } else {
