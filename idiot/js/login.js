@@ -11,7 +11,8 @@ loginform.addEventListener('submit', function (evt) {
     const savedNn = localStorage.getItem('savedNn');
 
     if (loginId === savedId && loginPw === savedPw) {
-    //    alert(`${savedNn}님. 환영합니다!`);
+        //    alert(`${savedNn}님. 환영합니다!`);
+        localStorage.setItem('login', 'true');
         location.href = "./main.html"
     } else {
         woLogin.innerHTML = '아이디 또는 비밀번호가 일치하지 않습니다.<br>다시 입력 바랍니다.';
