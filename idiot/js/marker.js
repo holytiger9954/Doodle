@@ -53,49 +53,43 @@ function markerData(markersData, registersave = false) {
             } else if (item.Category.includes('체육관')) {
                 mapMarker = 'infoH.html';
             } else if (item.Category.includes('경찰서')) {
-                mapMarker = 'infom.html';
+                mapMarker = 'infoT.html';
             } else if (item.Category.includes('흡연부스')) {
                 mapMarker = 'infoT.html';
             } else if (item.Category.includes('공중화장실')) {
-                mapMarker = 'infoG.html';
+                mapMarker = 'infoT.html';
             }
             /////////////////////여기부터이해못함///////////////////////////////////
             //다른파일에 있는 창을 가져오기 위해 fetch사용
-            fetch('./' + mapInformation)
+            fetch('./' + mapMarker)
                 .then(function (response) {
                     return response.text();
                 })
                 .then(function (html) {
-                    // [중요] main.html에 있는 ID와 정확히 일치해야 합니다.
-                    var sheet = document.getElementById('bottom-sheet');
-                    var dataContainer = document.getElementById('sheet-data');
-
-                    if (!sheet || !dataContainer) {
-                        console.error("바텀시트 엘리먼트를 찾을 수 없습니다.");
-                        return;
-                    }
-
                     var contentNode = document.createElement('div');
                     contentNode.innerHTML = html;
 
-                    // 정보 입력
+                    // HTML 내부의 ID를 찾아 데이터 매칭
                     var titleEl = contentNode.querySelector('#info-title');
                     if (titleEl) {
                         titleEl.innerText = item.title;
                     }
 
                     var addrEl = contentNode.querySelector('#info-address');
-                    if (addrEl && item.address) {
-                        addrEl.innerText = '주소 : ' + item.address;
+                    if (addrEl) {
+                        addrEl.innerText = item.address ? '주소 : ' + item.address : '주소 정보 없음';
                     }
 
-                    // 바텀시트 교체 및 노출
-                    dataContainer.innerHTML = '';
-                    dataContainer.appendChild(contentNode);
-                    sheet.classList.add('active');
-                })
-                .catch(function (error) {
-                    console.error("파일 로드 중 오류 발생:", error);
+                    // [핵심] 지도 위에 직접 뜨는 커스텀 오버레이 생성
+                    mapInformation = new kakao.maps.CustomOverlay({
+                        content: contentNode,
+                        map: map,
+                        position: marker.getPosition(),
+                        yAnchor: 1.2 // 마커보다 약간 위에 뜨게 조절
+                    });
+
+                    // 지도 중심을 클릭한 마커로 이동
+                    map.panTo(marker.getPosition());
                 });
         });
         allmarker.push(marker);//배열로저장
