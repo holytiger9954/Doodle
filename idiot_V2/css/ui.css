@@ -1,0 +1,125 @@
+/*
+  include 구조에서 main body 스타일이 깨지지 않도록 body 선택자를 제거하고
+  카테고리 바 전용 wrapper(.ui-inline-root / .ui-page-root)에만 스타일을 적용한다.
+*/
+.ui-inline-root,
+.ui-page-root {
+    background-color: transparent !important;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    white-space: nowrap;
+    min-width: 100%;
+    padding: 6px 8px;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.ui-inline-root::-webkit-scrollbar,
+.ui-page-root::-webkit-scrollbar {
+    display: none;
+}
+
+.ui {
+    border: 0;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 38px;
+    padding: 8px 12px;
+    border-radius: 999px;
+    background: var(--point-orange);
+    color: #fff;
+}
+
+
+.ui:hover {
+    cursor: pointer;
+}
+
+.ui.is-active {
+    background: #ffffff;
+    color: var(--point-orange);
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+    transform: translateY(-1px);
+}
+
+.ui.is-active span {
+    color: var(--point-orange);
+    font-weight: 700;
+}
+
+.ui.is-active img {
+    filter: saturate(1.1);
+}
+
+
+.ui img {
+    width: 20px;
+    height: 20px;
+    object-fit: cover;
+}
+
+.ui span {
+    font-size: 0.92rem;
+    color: #fff;
+}
+
+
+
+/*
+  PC 브라우저에서는 카테고리 바가 화면 중앙에 오도록 정렬한다.
+  모바일/태블릿에서는 기존처럼 가로 스크롤이 가능한 구조를 유지한다.
+*/
+@media (min-width: 769px) {
+    .ui-inline-root,
+    .ui-page-root {
+        justify-content: center;
+        width: fit-content;
+        min-width: 0;
+        max-width: 100%;
+        margin: 0 auto;
+    }
+}
+
+@media (max-width: 768px) {
+    .ui-inline-root,
+    .ui-page-root {
+        gap: 8px;
+        padding: 4px 6px;
+    }
+
+    .ui {
+        min-height: 36px;
+        padding: 7px 10px;
+    }
+
+    .ui img {
+        width: 18px;
+        height: 18px;
+    }
+
+    .ui span {
+        font-size: 0.84rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .ui-inline-root,
+    .ui-page-root {
+        gap: 6px;
+    }
+
+    .ui {
+        padding: 6px 9px;
+    }
+
+    .ui span {
+        font-size: 0.8rem;
+    }
+}

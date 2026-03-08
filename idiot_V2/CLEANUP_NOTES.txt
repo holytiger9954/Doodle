@@ -1,0 +1,14 @@
+이번 정리에서 제거한 미사용/중복 파일
+
+- infoC.html, infoG.html, infoH.html, infoT.html, infom.html
+  -> info.html 단일 상세 템플릿으로 통합되어 더 이상 사용하지 않음
+- marker.html
+  -> 현재 main.html + page.main.js 흐름에서 사용하지 않음
+- search.html, ranking.html, ui.html
+  -> include 구조 전환 후 partials/*.partial.html 로 대체되어 사용하지 않음
+
+남겨둔 파일
+- js_legacy/*
+  -> 참고/롤백용 백업 코드
+- mypage.html, register.html, login.html, join.html, report.html 등
+  -> 현재 화면/이동 흐름에서 여전히 사용 가능성이 있어 유지

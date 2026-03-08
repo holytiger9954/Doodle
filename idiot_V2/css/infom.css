@@ -1,0 +1,160 @@
+/* 마커 상세 바텀시트 카드 공통 스타일 */
+.info-window.dd-auth-box {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    max-width: 520px;
+    margin: 0 auto;
+    padding: 0;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18);
+}
+
+.info-header {
+    position: relative;
+    width: 100%;
+    height: 220px;
+}
+
+.info-header img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.info-header .close-btn {
+    float: none;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: white;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+    z-index: 10;
+    background: rgba(0,0,0,0.32);
+    border: none;
+    border-radius: 999px;
+    width: 36px;
+    height: 36px;
+}
+
+#info-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 28px 16px 12px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+    color: white;
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.info-body {
+    padding: 16px;
+    overflow-wrap: anywhere;
+}
+
+.info-category {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(243, 127, 18, 0.12);
+    color: var(--point-orange);
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.mg {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--soft-black);
+}
+
+.info-footer {
+    display: flex;
+    gap: 10px;
+    padding: 0 16px 16px;
+}
+
+.info-footer .auth-submit-btn {
+    flex: 1;
+    margin: 0;
+    min-height: 44px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#report {
+    background-color: var(--point-orange) !important;
+    color: white;
+}
+
+#info-link {
+    background-color: var(--main-blue) !important;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .info-window.dd-auth-box {
+        max-width: 100%;
+        border-radius: 18px;
+    }
+
+    .info-header {
+        height: 190px;
+    }
+
+    #info-title {
+        padding: 24px 14px 10px;
+        font-size: 0.95rem;
+    }
+
+    .info-body {
+        padding: 14px;
+    }
+
+    .mg {
+        font-size: 0.9rem;
+    }
+
+    .info-footer {
+        padding: 0 14px 14px;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .info-header {
+        height: 160px;
+    }
+
+    .info-header .close-btn {
+        width: 32px;
+        height: 32px;
+        top: 10px;
+        right: 10px;
+    }
+
+    .info-category {
+        min-height: 28px;
+        padding: 5px 10px;
+        font-size: 0.84rem;
+    }
+
+    .mg {
+        font-size: 0.84rem;
+    }
+
+    .info-footer {
+        flex-direction: column;
+    }
+}

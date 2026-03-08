@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>장소 등록</title>
+<link rel="stylesheet" href="./css/common.css">
+    <link rel="stylesheet" href="./css/register.css">
+
+</head>
+
+<body>
+    <div id="register">
+        <div class="register">
+            <select class="category" style="color:rgb(0, 0, 0)">
+                <option value="찜">찜</option>
+                <option value="병원">병원</option>
+                <option value="체육관">체육관</option>
+                <option value="경찰서">경찰서</option>
+                <option value="흡연부스">흡연부스</option>
+                <option value="공중 화장실">공중 화장실</option>
+            </select>
+            <div class="register-content-xy">
+                <input class="register-lat" placeholder="위도">
+                <input class="register-long" placeholder="경도">
+            </div>
+            <input id="content" class="register-content" type="text" style="height:230px;">
+            <button class="register-content-btn">등록</button>
+            <button class="register-content-btn cancel">취소</button>
+            <label id="register-private-btn">
+                <input class="register-private-btn" type="checkbox" value="비공개">
+                비공개
+            </label>
+        </div>
+    </div>
+
+<script src="./js/core/app.js"></script>
+<script src="./js/core/dom.js"></script>
+<script src="./js/core/storage.js"></script>
+<script src="./js/core/message.js"></script>
+<script src="./js/api/http.client.js"></script>
+<script src="./js/api/auth.api.js"></script>
+<script src="./js/api/spot.api.js"></script>
+<script src="./js/pages/page.register.js"></script>
+</body>
+
+</html>

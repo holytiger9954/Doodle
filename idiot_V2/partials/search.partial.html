@@ -1,0 +1,29 @@
+<!--
+  include 전환용 검색 UI 파셜.
+  main.html 안의 #search-slot 에 삽입된다.
+  검색 입력 + 실행 버튼 + 결과 드롭다운을 한 컴포넌트로 묶는다.
+-->
+<div class="search-inline-root">
+  <p id="search-feedback" class="search-feedback hidden" role="status" aria-live="polite"></p>
+  <div id="search-parent" class="search-parent">
+    <input type="text" placeholder="장소를 검색하세요" id="search" autocomplete="off" aria-label="장소 검색">
+    <button type="button" class="search-action-btn search-clear-btn" id="search-clear" aria-label="검색어 지우기" title="검색어 지우기">×</button>
+    <button type="button" class="search-action-btn search-submit-btn cursor-pointer" id="search-submit" aria-label="검색 실행" title="검색 실행">
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/4353/4353607.png"
+        alt="돋보기"
+        width="20"
+        height="20"
+      >
+    </button>
+  </div>
+
+  <div id="search-dropdown" class="search-dropdown hidden" aria-live="polite">
+    <div class="search-dropdown-header">
+      <strong id="search-dropdown-title">검색 결과</strong>
+      <span id="search-result-count">0건</span>
+    </div>
+    <ul id="search-result-list" class="search-result-list"></ul>
+    <div id="search-empty" class="search-empty hidden">검색 결과가 없습니다.</div>
+  </div>
+</div>

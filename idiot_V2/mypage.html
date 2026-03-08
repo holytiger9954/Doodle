@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="./css/common.css">
+    <!-- <link rel="stylesheet" href="./css/main.css">  -->
+    <link rel="stylesheet" href="./css/mypage.css">
+</head>
+<body id="side">
+    <div class="side-header">
+        <h1>MY PAGE</h1>
+        <button class="close-panel" onclick="window.parent.toggleSidebar()">×</button>
+    </div>
+    <div class="category-list side">
+        <button type="button" class="side-btn" ><img src="./img/star.png"> <span>찜 목록</span></button>
+        <button type="button" class="side-btn"><img src="./img/hospital.png"> <span>병원</span></button>
+        <button type="button" class="side-btn"><img src="./img/gym.png"> <span>체육관</span></button>
+        <button type="button" class="side-btn"><img src="./img/police.png"> <span>경찰서</span></button>
+        <button type="button" class="side-btn"><img src="./img/smoking.png"> <span>흡연부스</span></button>
+        <button type="button" class="side-btn"><img src="./img/toilet.png"> <span>공중 화장실</span></button>
+        <div id="marker" class="marker"></div>
+    </div>
+    <div class="side-ad">광고 영역 (Doodle Ads)</div>
+<script src="./js/core/app.js"></script>
+<script src="./js/core/dom.js"></script>
+<script src="./js/core/message.js"></script>
+<script src="./js/data/category.data.js"></script>
+<script src="./js/ui/ui.marker.panel.js"></script>
+</body>
+</html>

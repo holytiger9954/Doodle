@@ -1,0 +1,122 @@
+.ranking-container {
+    padding: 52px 20px 20px;
+    background-color: var(--main-blue);
+    min-height: 100%;
+    color: var(--text-white);
+}
+
+.ranking-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--point-orange);
+    padding-left: 10px;
+}
+
+.ranking-list {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.ranking-item {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 15px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: 0.3s;
+}
+
+.ranking-item:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateY(-2px);
+}
+
+.rank-number {
+    font-weight: bold;
+    font-size: 18px;
+    color: var(--point-orange);
+    width: 30px;
+}
+
+.hashtag-info {
+    flex-grow: 1;
+    margin-left: 4px;
+    min-width: 0;
+}
+
+.hashtag-name {
+    font-size: 16px;
+    display: block;
+    margin-bottom: 5px;
+    word-break: keep-all;
+}
+
+.count-bar {
+    height: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 3px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.count-fill {
+    height: 100%;
+    background: var(--neon-blue);
+}
+
+.count-text {
+    min-width: 48px;
+    text-align: right;
+}
+
+@media (max-width: 768px) {
+    .ranking-container {
+        padding: 48px 16px 16px;
+    }
+
+    .ranking-title {
+        font-size: 1.1rem;
+        margin-bottom: 16px;
+    }
+
+    .ranking-item {
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .hashtag-name {
+        font-size: 0.95rem;
+    }
+
+    .count-text {
+        min-width: 42px;
+        font-size: 0.82rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .ranking-container {
+        padding: 44px 12px 12px;
+    }
+
+    .ranking-list {
+        gap: 10px;
+    }
+
+    .rank-number {
+        width: 24px;
+        font-size: 1rem;
+    }
+
+    .hashtag-name {
+        font-size: 0.88rem;
+    }
+
+    .count-text {
+        min-width: 36px;
+        font-size: 0.76rem;
+    }
+}

@@ -1,0 +1,75 @@
+.dd-auth-box {
+    background: var(--main-blue) !important;
+    backdrop-filter: blur(10px);
+    box-shadow: 0 10px 30px var(--soft-black);
+    position: relative;
+    box-sizing: border-box;
+    /* 고정 너비를 삭제하여 common.css의 크기 설정을 따르도록 함 */
+}
+
+/* 2. 닫기 버튼: 원래 위치(20px/20px)로 복구 */
+.close-btn {
+    position: absolute;
+    top: 20px;    /* 사용자님 원본값 */
+    right: 20px;  /* 사용자님 원본값 */
+    color: var(--text-white) !important;
+    line-height: 1;
+}
+
+/* 3. 제목: 원래 마진값으로 복구 */
+#report-section h2 {
+    margin-top: 0; 
+    margin-bottom: 25px; /* 사용자님 원본값 */
+    color: var(--text-white) !important;
+    font-size: 22px;
+    text-align: left;
+}
+
+/* 4. 내부 요소: 원래 간격 유지 + 색상 적용 */
+#report-section select {
+    border-radius: 4px;
+    width: 100%;
+    height: 25px;
+    margin-bottom: 15px;
+    background: var(--point-orange) !important;
+    color: white !important;
+    border: none;
+}
+
+#report-section textarea {
+    height: 150px;
+    width: 100%;
+    margin-bottom: 15px;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-white) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    padding: 5px;
+    resize: none;
+    outline: none;
+}
+
+#report-section textarea::placeholder {
+    color: #999;
+    font-size: 0.92em;
+    font-weight: 580;
+}
+
+/* 5. 마지막 버튼: 하단 마진 제거 및 오렌지색 적용 */
+.report-btn {
+    width: 100%;
+    margin-bottom: 0 !important;
+    background-color: var(--point-orange) !important;
+    color: var(--text-white);
+    font-weight: bold;
+}
+
+@media (max-width: 768px) {
+    #report-section h2 {
+        font-size: 1.2rem;
+        margin-bottom: 18px;
+    }
+
+    #report-section textarea {
+        height: 130px;
+    }
+}

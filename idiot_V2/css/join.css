@@ -1,0 +1,67 @@
+
+ .dd-auth-box {
+    background: var(--main-blue) !important; 
+    backdrop-filter: blur(10px);
+    padding: 40px 30px; 
+    width: 360px; /* 입력창 가이드 텍스트가 길어서 너비를 살짝 넓힘 */
+    text-align: center;
+    box-shadow: 0 10px 30px var(--soft-black);
+}
+
+/* 제목 스타일: 로그인과 일치 */
+h2 {
+    text-align: left;
+    color: var(--text-white) !important; /* HTML 인라인 스타일 #222 대비 */
+    margin-bottom: 25px;
+}
+
+/* 입력창: 세련된 다크 테마 및 포인트 적용 */
+.dd-input {
+    width: 100% !important;
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: var(--text-white) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    margin-bottom: 5px; /* 메시지와의 간격을 위해 약간 줄임 */
+}
+
+.dd-input:focus {
+    border-color: var(--point-orange) !important;
+    background: rgba(255, 255, 255, 0.1) !important;
+}
+
+/* 가이드 메시지 (아이디 중복, 비번 불일치 등) */
+.message {
+    color: var(--point-orange); /* 마음에 들어하신 오렌지색으로 통일 */
+    font-size: 0.75rem;
+    text-align: left;
+    padding-left: 5px;
+    min-height: 1em;
+}
+
+/* 회원가입 버튼: 메인 버튼 스타일 계승 */
+.auth-submit-btn {
+    width: 100% !important;
+    margin-top: 15px;
+    background: var(--point-orange) !important;
+    color: var(--text-white);
+}
+
+.auth-submit-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+}
+.close-btn {
+    color: var(--text-white);
+}
+
+@media (max-width: 768px) {
+    .dd-auth-box {
+        width: min(94vw, 380px);
+        padding: 28px 20px;
+    }
+
+    h2 {
+        font-size: 1.3rem;
+        margin-bottom: 20px;
+    }
+}
