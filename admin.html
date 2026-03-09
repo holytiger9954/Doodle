@@ -1,160 +1,827 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>관리자 시스템 (Admin)</title>
-    <style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Doodle Admin</title>
+  <script>
+    window.API_V1_URI = window.API_V1_URI || "http://116.36.205.25:15180";
+  </script>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    :root {
+      --bg: #f8fafc;
+      --nav: #0f172a;
+      --navActive: #1d4ed8;
+      --card: #ffffff;
+      --line: #e2e8f0;
+      --text: #0f172a;
+      --muted: #64748b;
+      --primary: #2563eb;
+      --danger: #dc2626;
+      --green: #16a34a;
+      --yellow: #ca8a04;
+    }
 
-</style>
-    <link rel="stylesheet" href="./css/admin.css" />
-    <!-- jQuery -->
-    <script src="../js/jquery-3.7.1.js"></script>
-    <!-- Unified API Library -->
-    <script src="./js/dd.api.v1.js"></script>
+    * {
+      box-sizing: border-box;
+    }
 
-    <script>
-      // Admin page uses only APIs that are currently supported (read-only KPIs).
-      $(function () {
-        if (!window.DD || !DD.V1) {
-          console.error("DD.V1 API library not loaded.");
-          $("#kpiTotalMarkers").text("API 라이브러리 누락");
-          $("#kpiTopTag").text("API 라이브러리 누락");
-          return;
-        }
+    body {
+      margin: 0;
+      font-family: system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+    }
 
-        const fmt = (n) => {
-          const x = Number(n);
-          if (!Number.isFinite(x)) return "-";
-          return x.toLocaleString("ko-KR") + " 건";
-        };
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
 
-        function loadTotalMarkers() {
-          $("#kpiTotalMarkers").text("로딩...");
-          DD.V1.Posts.list({ page: 1, pageSize: 1 })
-            .done((res) => {
-              const total = res && res.ok ? res.total : null;
-              $("#kpiTotalMarkers").text(fmt(total));
-            })
-            .fail((xhr) => {
-              $("#kpiTotalMarkers").text("조회 실패");
-              console.error("Total markers load failed:", xhr);
-            });
-        }
+    .sidebar {
+      width: 260px;
+      background: var(--nav);
+      color: #cbd5e1;
+      padding: 20px 0;
+    }
 
-        function loadTopTags() {
-          $("#kpiTopTag").text("로딩...");
-          $("#tagsTbody").html('<tr><td colspan="4" class="muted">로딩 중...</td></tr>');
+    .brand {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      padding: 0 22px 18px;
+      border-bottom: 1px solid #1e293b;
+    }
 
-          DD.V1.Tags.top({ limit: 10, days: 7 })
-            .done((res) => {
-              const items = (res && res.ok && Array.isArray(res.items)) ? res.items : [];
-              if (!items.length) {
-                $("#kpiTopTag").text("-");
-                $("#tagsTbody").html('<tr><td colspan="4" class="muted">데이터 없음</td></tr>');
-                return;
-              }
+    .brand small {
+      display: block;
+      font-size: 12px;
+      color: #93c5fd;
+      margin-top: 4px;
+    }
 
-              const top1 = items[0];
-              $("#kpiTopTag").text((top1.tag || "-") + " · " + fmt(top1.count).replace(" 건",""));
+    .nav-item {
+      padding: 14px 22px;
+      cursor: pointer;
+      font-weight: 600;
+      border-left: 4px solid transparent;
+    }
 
-              const rows = items.map((it, i) => {
-                const tag = String(it.tag || "-");
-                const cnt = Number(it.count || 0);
-                // 관리자 액션(중단/제외)은 현재 API 미지원 → 읽기 전용 뷰만 제공
-                return `
-                  <tr>
-                    <td class="mono">${i + 1}</td>
-                    <td>${tag}</td>
-                    <td class="mono">${cnt.toLocaleString("ko-KR")}</td>
-                    <td><span class="badge active">조회 전용</span></td>
-                  </tr>`;
-              }).join("");
+    .nav-item:hover {
+      background: #13213a;
+      color: #fff;
+    }
 
-              $("#tagsTbody").html(rows);
-            })
-            .fail((xhr) => {
-              $("#kpiTopTag").text("조회 실패");
-              $("#tagsTbody").html('<tr><td colspan="4" class="muted">조회 실패</td></tr>');
-              console.error("Top tags load failed:", xhr);
-            });
-        }
+    .nav-item.active {
+      background: #13213a;
+      border-left-color: var(--navActive);
+      color: #fff;
+    }
 
-        // initial loads
-        loadTotalMarkers();
-        loadTopTags();
+    .content {
+      flex: 1;
+      padding: 28px;
+      overflow: auto;
+    }
 
-        // Menu tab behavior (simple)
-        const $items = $(".nav-menu li");
-        const $panels = $(".main-content .panel");
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      align-items: center;
+      margin-bottom: 20px;
+    }
 
-        $items.on("click", function () {
-          $items.removeClass("active");
-          $(this).addClass("active");
+    .title h1 {
+      margin: 0;
+      font-size: 28px;
+    }
 
-          const txt = $(this).text().trim();
-          // Panels order: dashboard, hashtag
-          if (txt.startsWith("F-5.1")) {
-            $panels.hide().eq(0).show();
-          } else if (txt.startsWith("F-5.3")) {
-            $panels.hide().eq(1).show();
+    .title p {
+      margin: 6px 0 0;
+      color: var(--muted);
+    }
+
+    .server-box {
+      background: var(--card);
+      border: 1px solid var(--line);
+      padding: 14px;
+      border-radius: 14px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    input, select, textarea, button {
+      font: inherit;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      padding: 10px 12px;
+      background: #fff;
+    }
+
+    textarea {
+      min-height: 72px;
+      resize: vertical;
+    }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 10px 14px;
+      cursor: pointer;
+    }
+
+    .btn { background: var(--primary); color: #fff; }
+    .btn.secondary { background: #334155; color: #fff; }
+    .btn.warn { background: var(--yellow); color: #111827; }
+    .btn.danger { background: var(--danger); color: #fff; }
+    .btn.success { background: var(--green); color: #fff; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    /* 차트 전용 그리드 및 래퍼 추가 */
+    .chart-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    @media (max-width: 1100px) {
+      .chart-grid { grid-template-columns: 1fr; }
+    }
+
+    .chart-wrapper {
+      position: relative;
+      height: 280px;
+      width: 100%;
+      margin-top: 14px;
+    }
+
+    .card, .panel {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 18px;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, .04);
+    }
+    
+    .chart-card h3 {
+      margin: 0;
+      font-size: 16px;
+      color: var(--text);
+    }
+
+    .card .label {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .card .value {
+      font-size: 30px;
+      font-weight: 800;
+    }
+
+    .panel { display: none; }
+    .panel.active { display: block; }
+    .panel h2 { margin: 0 0 14px; }
+
+    .toolbar, .form-grid {
+      display: grid;
+      gap: 10px;
+    }
+
+    .toolbar {
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      margin-bottom: 14px;
+    }
+
+    .form-grid {
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      margin-bottom: 14px;
+    }
+
+    table { width: 100%; border-collapse: collapse; }
+    th, td {
+      padding: 12px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+    th {
+      background: #f8fafc;
+      color: var(--muted);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .badge.RECEIVED { background: #dbeafe; color: #1d4ed8; }
+    .badge.IN_REVIEW { background: #fef3c7; color: #92400e; }
+    .badge.DONE, .badge.ACTIVE { background: #dcfce7; color: #166534; }
+    .badge.REJECTED, .badge.HIDDEN, .badge.BLOCKED { background: #fee2e2; color: #991b1b; }
+
+    .muted { color: var(--muted); }
+    .actions { display: flex; flex-wrap: wrap; gap: 6px; }
+    .actions button { padding: 8px 10px; font-size: 12px; }
+    .mono { font-family: Consolas, monospace; }
+
+    .msg {
+      margin-bottom: 14px;
+      padding: 12px 14px;
+      border-radius: 12px;
+      display: none;
+    }
+    .msg.ok { display: block; background: #ecfdf5; color: #166534; border: 1px solid #a7f3d0; }
+    .msg.err { display: block; background: #fef2f2; color: #991b1b; border: 1px solid #fecaca; }
+
+    @media (max-width: 900px) {
+      .layout { display: block; }
+      .sidebar { width: 100%; }
+      .content { padding: 18px; }
+      .topbar { display: block; }
+      .server-box { margin-top: 12px; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="brand">Doodle Admin<small>운영 콘솔</small></div>
+      <div class="nav-item active" data-panel="dashboard">대시보드</div>
+      <div class="nav-item" data-panel="inbox">신고 접수함</div>
+      <div class="nav-item" data-panel="history">신고 처리 이력</div>
+      <div class="nav-item" data-panel="posts">게시글 관리</div>
+      <div class="nav-item" data-panel="tagBlock">태그 차단 관리</div>
+      <div class="nav-item" data-panel="tagStats">태그 현황</div>
+      <div class="nav-item" data-panel="logs">운영 로그</div>
+    </aside>
+
+    <main class="content">
+      <div class="topbar">
+        <div class="title">
+          <h1>관리자 운영 센터</h1>
+          <p>조회 전용이 아니라 상태 변경, 게시글 숨김, 태그 차단까지 처리하는 운영 화면이다.</p>
+        </div>
+        <div class="server-box">
+          <input id="apiUri" value="http://127.0.0.1:15180" />
+          <button class="btn secondary" id="btnApplyUri">서버 적용</button>
+        </div>
+      </div>
+
+      <div id="globalMsg" class="msg"></div>
+
+      <section class="panel active" data-panel="dashboard">
+        <h2>대시보드</h2>
+        <div class="grid">
+          <div class="card">
+            <div class="label">총 게시글</div>
+            <div class="value" id="kpiTotalPosts">-</div>
+          </div>
+          <div class="card">
+            <div class="label">미처리 신고</div>
+            <div class="value" id="kpiPendingReports">-</div>
+          </div>
+          <div class="card">
+            <div class="label">오늘 신고</div>
+            <div class="value" id="kpiTodayReports">-</div>
+          </div>
+          <div class="card">
+            <div class="label">활성 차단 태그</div>
+            <div class="value" id="kpiBlockedTags">-</div>
+          </div>
+          <div class="card">
+            <div class="label">운영 로그</div>
+            <div class="value" id="kpiActionLogs">-</div>
+          </div>
+        </div>
+
+        <div class="chart-grid">
+          <div class="card chart-card">
+            <h3>통합 운영 지표 현황</h3>
+            <div class="chart-wrapper">
+              <canvas id="kpiChartCanvas"></canvas>
+            </div>
+          </div>
+          <div class="card chart-card">
+            <h3>인기 태그 TOP 5 점유율</h3>
+            <div class="chart-wrapper">
+              <canvas id="tagChartCanvas"></canvas>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="inbox">
+        <h2>신고 접수함</h2>
+        <div class="toolbar">
+          <select id="reportStatusFilter">
+            <option value="">전체(미완료 기본)</option>
+            <option value="RECEIVED">RECEIVED</option>
+            <option value="IN_REVIEW">IN_REVIEW</option>
+            <option value="DONE">DONE</option>
+            <option value="REJECTED">REJECTED</option>
+          </select>
+          <select id="reportIncludeClosed">
+            <option value="false">미완료만</option>
+            <option value="true">완료 포함</option>
+          </select>
+          <button class="btn" id="btnReloadInbox">새로고침</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>신고번호</th>
+              <th>대상</th>
+              <th>사유</th>
+              <th>상태</th>
+              <th>등록</th>
+              <th>처리</th>
+            </tr>
+          </thead>
+          <tbody id="reportInboxBody"></tbody>
+        </table>
+      </section>
+
+      <section class="panel" data-panel="history">
+        <h2>신고 처리 이력</h2>
+        <div class="toolbar"><button class="btn" id="btnReloadHistory">새로고침</button></div>
+        <table>
+          <thead>
+            <tr>
+              <th>신고번호</th>
+              <th>결과</th>
+              <th>처리메모</th>
+              <th>처리자</th>
+              <th>처리시각</th>
+            </tr>
+          </thead>
+          <tbody id="reportHistoryBody"></tbody>
+        </table>
+      </section>
+
+      <section class="panel" data-panel="posts">
+        <h2>게시글 관리</h2>
+        <div class="toolbar">
+          <input id="postKeyword" placeholder="제목/내용/태그 검색" />
+          <select id="postBlindFilter">
+            <option value="">전체</option>
+            <option value="1">숨김만</option>
+            <option value="0">노출만</option>
+          </select>
+          <button class="btn" id="btnReloadPosts">새로고침</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>게시글번호</th>
+              <th>제목</th>
+              <th>태그</th>
+              <th>신고수</th>
+              <th>상태</th>
+              <th>관리</th>
+            </tr>
+          </thead>
+          <tbody id="postsBody"></tbody>
+        </table>
+      </section>
+
+      <section class="panel" data-panel="tagBlock">
+        <h2>태그 차단 관리</h2>
+        <div class="card" style="margin-bottom:16px;">
+          <div class="form-grid">
+            <input id="newTagText" placeholder="#태그명" />
+            <input id="newTagReason" placeholder="차단 사유" />
+            <button class="btn danger" id="btnAddBlockedTag">차단 등록</button>
+          </div>
+        </div>
+        <div class="grid" style="margin-bottom:16px; grid-template-columns:1fr 1fr;">
+          <div class="card">
+            <h3 style="margin-top:0;">차단 후보 태그</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>태그</th>
+                  <th>게시글수</th>
+                  <th>신고수</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="tagCandidatesBody"></tbody>
+            </table>
+          </div>
+          <div class="card">
+            <h3 style="margin-top:0;">차단 태그 목록</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>태그</th>
+                  <th>사유</th>
+                  <th>상태</th>
+                  <th>관리</th>
+                </tr>
+              </thead>
+              <tbody id="blockedTagsBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel" data-panel="tagStats">
+        <h2>태그 현황</h2>
+        <div class="toolbar">
+          최근 : <input id="tagDays" type="number" min="1" value="2" />
+          <button class="btn" id="btnReloadTagStats">새로고침</button>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>태그</th>
+              <th>게시글수</th>
+              <th>신고수</th>
+              <th>차단여부</th>
+            </tr>
+          </thead>
+          <tbody id="tagStatsBody"></tbody>
+        </table>
+      </section>
+
+      <section class="panel" data-panel="logs">
+        <h2>운영 로그</h2>
+        <div class="toolbar"><button class="btn" id="btnReloadLogs">새로고침</button></div>
+        <table>
+          <thead>
+            <tr>
+              <th>로그번호</th>
+              <th>관리자</th>
+              <th>대상</th>
+              <th>행동</th>
+              <th>사유</th>
+              <th>시각</th>
+            </tr>
+          </thead>
+          <tbody id="logsBody"></tbody>
+        </table>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    (function () {
+      const state = { apiUri: window.API_V1_URI || "http://127.0.0.1:15180" };
+      let kpiChart = null;
+      let tagChart = null;
+
+      // Chart.js 전역 설정
+      Chart.defaults.font.family = "system-ui, sans-serif";
+      Chart.defaults.color = '#64748b';
+
+      const api = (path, options = {}) => {
+        return $.ajax({
+          method: options.method || "GET",
+          url: state.apiUri.replace(/\/+$/g, "") + "/api/v1/dd" + path,
+          data: options.data ? JSON.stringify(options.data) : undefined,
+          contentType: options.data ? "application/json" : undefined,
+          dataType: "json"
+        });
+      };
+      const fmt = (n) => Number(n || 0).toLocaleString("ko-KR");
+      const esc = (v) => String(v == null ? "" : v)
+        .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+
+      const clearMsg = () => {
+        const $m = $("#globalMsg");
+        $m.removeClass("ok err").text("").hide();
+      };
+
+      const showMsg = (type, text) => {
+        const $m = $("#globalMsg");
+        $m.stop(true, true);
+        $m.removeClass("ok err").addClass(type).text(text).show();
+        setTimeout(() => {
+          $m.fadeOut(150, function () {
+            $m.removeClass("ok err").text("").show();
+          });
+        }, 2000);
+      };
+      const fillEmpty = ($el, colspan, text = "데이터가 없습니다.") => $el.html(`<tr><td colspan="${colspan}" class="muted">${esc(text)}</td></tr>`);
+
+      function switchPanel(name) {
+        clearMsg();
+        $(".nav-item").removeClass("active");
+        $(`.nav-item[data-panel='${name}']`).addClass("active");
+        $(".panel").removeClass("active");
+        $(`.panel[data-panel='${name}']`).addClass("active");
+      }
+
+      // --- 차트 렌더링 함수 ---
+      function renderKpiChart(data) {
+        const ctx = document.getElementById('kpiChartCanvas');
+        if (!ctx) return;
+        if (kpiChart) kpiChart.destroy();
+        
+        kpiChart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['총 게시글', '미처리 신고', '오늘 신고', '차단 태그', '운영 로그'],
+            datasets: [{
+              label: '누적 건수',
+              data: [data.totalPosts||0, data.pendingReports||0, data.todayReports||0, data.blockedTags||0, data.actionLogs||0],
+              backgroundColor: '#2563eb',
+              borderRadius: 6,
+              barThickness: 40
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: { y: { beginAtZero: true, grid: { borderDash: [4, 4] } } }
           }
         });
+      }
 
-        // default show dashboard only
-        $panels.hide().eq(0).show();
+      function renderTagChart(items) {
+        const ctx = document.getElementById('tagChartCanvas');
+        if (!ctx) return;
+        if (tagChart) tagChart.destroy();
+
+        const labels = items.map(it => it.tagText);
+        const data = items.map(it => it.postCount);
+
+        tagChart = new Chart(ctx, {
+          type: 'doughnut',
+          data: {
+            labels: labels.length ? labels : ['데이터 없음'],
+            datasets: [{
+              data: data.length ? data : [1],
+              backgroundColor: ['#2563eb', '#16a34a', '#ca8a04', '#dc2626', '#8b5cf6'],
+              borderWidth: 0,
+              cutout: '70%'
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { position: 'bottom' } }
+          }
+        });
+      }
+
+      function loadDashboard() {
+        api("/admin/dashboard").done((res) => {
+          $("#kpiTotalPosts").text(fmt(res.totalPosts));
+          $("#kpiPendingReports").text(fmt(res.pendingReports));
+          $("#kpiTodayReports").text(fmt(res.todayReports));
+          $("#kpiBlockedTags").text(fmt(res.blockedTags));
+          $("#kpiActionLogs").text(fmt(res.actionLogs));
+          renderKpiChart(res); // 차트 연동
+        }).fail((xhr) => {
+          showMsg("err", xhr?.responseJSON?.message || "대시보드 조회 실패");
+          renderKpiChart({});
+        });
+      }
+
+      function loadDashboardCharts() {
+        api("/admin/tags/stats?days=7&limit=5").done((res) => {
+          renderTagChart(res.items || []);
+        }).fail(() => renderTagChart([]));
+      }
+
+      function loadInbox() {
+        api(`/admin/reports?status=${encodeURIComponent($("#reportStatusFilter").val())}&includeClosed=${encodeURIComponent($("#reportIncludeClosed").val())}&page=1&pageSize=50`).done((res) => {
+          const items = Array.isArray(res.items) ? res.items : [];
+          const $body = $("#reportInboxBody");
+          if (!items.length) return fillEmpty($body, 6);
+          $body.html(items.map((it) => `
+            <tr>
+              <td class="mono">${it.reportNo}</td>
+              <td>${esc(it.targetType)} / <span class="mono">${it.targetNo}</span><br><span class="muted">${esc(it.title || "-")}</span></td>
+              <td>${esc(it.reasonName || it.reasonCode)}<br><span class="muted">${esc(it.reasonText || "")}</span></td>
+              <td><span class="badge ${esc(it.status)}">${esc(it.status)}</span></td>
+              <td>${esc(it.createdAt || "-")}</td>
+              <td>
+                <div class="actions">
+                  <button class="btn warn js-report-action" data-report-no="${it.reportNo}" data-status="IN_REVIEW">검토중</button>
+                  <button class="btn success js-report-action" data-report-no="${it.reportNo}" data-status="DONE">완료</button>
+                  <button class="btn secondary js-report-action" data-report-no="${it.reportNo}" data-status="REJECTED">반려</button>
+                  ${it.targetType === "POST" ? `<button class="btn danger js-report-action" data-report-no="${it.reportNo}" data-status="DONE" data-blind-post="Y">완료+숨김</button>` : ""}
+                </div>
+              </td>
+            </tr>
+          `).join(""));
+        }).fail((xhr) => {
+          fillEmpty($("#reportInboxBody"), 6, "조회 실패");
+          showMsg("err", xhr?.responseJSON?.message || "신고 접수함 조회 실패");
+        });
+      }
+
+      function loadHistory() {
+        api("/admin/reports?includeClosed=true&page=1&pageSize=50").done((res) => {
+          const items = (res.items || []).filter((x) => ["DONE", "REJECTED"].includes(x.status));
+          const $body = $("#reportHistoryBody");
+          if (!items.length) return fillEmpty($body, 5);
+          $body.html(items.map((it) => `
+            <tr>
+              <td class="mono">${it.reportNo}</td>
+              <td><span class="badge ${esc(it.status)}">${esc(it.status)}</span><br><span class="muted">${esc(it.reviewResult || "-")}</span></td>
+              <td>${esc(it.reviewMemo || "-")}</td>
+              <td class="mono">${it.reviewedBy || "-"}</td>
+              <td>${esc(it.reviewedAt || "-")}</td>
+            </tr>
+          `).join(""));
+        }).fail(() => fillEmpty($("#reportHistoryBody"), 5, "조회 실패"));
+      }
+
+      function loadPosts() {
+        const q = encodeURIComponent($("#postKeyword").val() || "");
+        const isBlinded = encodeURIComponent($("#postBlindFilter").val() || "");
+        api(`/admin/posts?q=${q}&isBlinded=${isBlinded}&page=1&pageSize=50`).done((res) => {
+          const items = res.items || [];
+          const $body = $("#postsBody");
+          if (!items.length) return fillEmpty($body, 6);
+          $body.html(items.map((it) => `
+            <tr>
+              <td class="mono">${it.postNo}</td>
+              <td>${esc(it.title || "-")}</td>
+              <td>${esc(it.tags || "-")}</td>
+              <td class="mono">${fmt(it.reportCount)}</td>
+              <td><span class="badge ${esc(it.status || (it.isBlinded ? "HIDDEN" : "ACTIVE"))}">${esc(it.status || (it.isBlinded ? "HIDDEN" : "ACTIVE"))}</span><br><span class="muted">${esc(it.blindReason || "")}</span></td>
+              <td><div class="actions">${it.isBlinded ? `<button class="btn success js-post-blind" data-post-no="${it.postNo}" data-is-blinded="N">숨김해제</button>` : `<button class="btn danger js-post-blind" data-post-no="${it.postNo}" data-is-blinded="Y">숨김</button>`}</div></td>
+            </tr>
+          `).join(""));
+        }).fail(() => fillEmpty($("#postsBody"), 6, "조회 실패"));
+      }
+
+      function loadBlockedTags() {
+        api("/admin/tags/blocked?activeOnly=").done((res) => {
+          const items = res.items || [];
+          const $body = $("#blockedTagsBody");
+          if (!items.length) return fillEmpty($body, 4);
+          $body.html(items.map((it) => `
+            <tr>
+              <td>${esc(it.tagText)}</td>
+              <td>${esc(it.blockReason || "-")}</td>
+              <td><span class="badge ${it.isActive ? "ACTIVE" : "REJECTED"}">${it.isActive ? "ACTIVE" : "INACTIVE"}</span></td>
+              <td><div class="actions">${it.isActive ? `<button class="btn secondary js-tag-toggle" data-tag-text="${esc(it.tagText)}" data-active="N">해제</button>` : `<button class="btn success js-tag-toggle" data-tag-text="${esc(it.tagText)}" data-active="Y">재활성</button>`}</div></td>
+            </tr>
+          `).join(""));
+        }).fail(() => fillEmpty($("#blockedTagsBody"), 4, "조회 실패"));
+      }
+
+      function loadTagCandidates() {
+        api("/admin/tags/candidates?days=7&limit=20").done((res) => {
+          const items = res.items || [];
+          const $body = $("#tagCandidatesBody");
+          if (!items.length) return fillEmpty($body, 4);
+          $body.html(items.map((it) => `
+            <tr>
+              <td>${esc(it.tagText)}</td>
+              <td class="mono">${fmt(it.postCount)}</td>
+              <td class="mono">${fmt(it.reportCount)}</td>
+              <td><button class="btn danger js-candidate-block" data-tag-text="${esc(it.tagText)}">차단</button></td>
+            </tr>
+          `).join(""));
+        }).fail(() => fillEmpty($("#tagCandidatesBody"), 4, "조회 실패"));
+      }
+
+      function loadTagStats() {
+        const days = encodeURIComponent($("#tagDays").val() || 7);
+        api(`/admin/tags/stats?days=${days}&limit=50`).done((res) => {
+          const items = res.items || [];
+          const $body = $("#tagStatsBody");
+          if (!items.length) return fillEmpty($body, 4);
+          $body.html(items.map((it) => `
+            <tr>
+              <td>${esc(it.tagText)}</td>
+              <td class="mono">${fmt(it.postCount)}</td>
+              <td class="mono">${fmt(it.reportCount)}</td>
+              <td><span class="badge ${it.isBlocked ? "BLOCKED" : "ACTIVE"}">${it.isBlocked ? "차단" : "정상"}</span></td>
+            </tr>
+          `).join(""));
+        }).fail(() => fillEmpty($("#tagStatsBody"), 4, "조회 실패"));
+      }
+
+      function loadLogs() {
+        api("/admin/action-logs?page=1&pageSize=50").done((res) => {
+          const items = res.items || [];
+          const $body = $("#logsBody");
+          if (!items.length) return fillEmpty($body, 6);
+          $body.html(items.map((it) => `
+            <tr>
+              <td class="mono">${it.actionLogNo}</td>
+              <td class="mono">${it.adminNo}</td>
+              <td>${esc(it.targetType)} / <span class="mono">${it.targetNo}</span></td>
+              <td>${esc(it.actionType)}</td>
+              <td>${esc(it.actionReason || "-")}</td>
+              <td>${esc(it.createdAt || "-")}</td>
+            </tr>
+          `).join(""));
+        }).fail(() => fillEmpty($("#logsBody"), 6, "조회 실패"));
+      }
+
+      function refreshAll() {
+        loadDashboard();
+        loadDashboardCharts();
+        loadInbox();
+        loadHistory();
+        loadPosts();
+        loadBlockedTags();
+        loadTagCandidates();
+        loadTagStats();
+        loadLogs();
+      }
+
+      $(document).on("click", ".nav-item", function () { switchPanel($(this).data("panel")); });
+      $("#btnApplyUri").on("click", function () { state.apiUri = $("#apiUri").val().trim() || state.apiUri; showMsg("ok", `API 서버를 ${state.apiUri} 로 설정했다.`); refreshAll(); });
+      $("#btnReloadInbox").on("click", loadInbox);
+      $("#btnReloadHistory").on("click", loadHistory);
+      $("#btnReloadPosts").on("click", loadPosts);
+      $("#btnReloadTagStats").on("click", loadTagStats);
+      $("#btnReloadLogs").on("click", loadLogs);
+
+      $(document).on("click", ".js-report-action", function () {
+        const reportNo = Number($(this).data("reportNo"));
+        const status = $(this).data("status");
+        const blindPost = $(this).data("blindPost") === "Y";
+        const reviewMemo = window.prompt("처리 메모를 입력", blindPost ? "신고 처리에 따라 게시글을 숨김" : `${status} 처리`);
+        if (reviewMemo == null) return;
+        api(`/admin/reports/${reportNo}/status`, {
+          method: "PATCH",
+          data: { status, reviewResult: status, reviewMemo, reviewedBy: 1, blindPost, postStatus: blindPost ? "HIDDEN" : undefined }
+        }).done(() => { showMsg("ok", `신고 ${reportNo} 상태를 ${status} 로 변경했다.`); refreshAll(); })
+          .fail((xhr) => showMsg("err", xhr?.responseJSON?.message || `신고 ${reportNo} 처리 실패`));
       });
-    </script>
-</head>
-<body>
 
-    <nav class="sidebar">
-        <div class="sidebar-header">
-            Admin System
-        </div>
-        <ul class="nav-menu">
-            <li class="active">F-5.1 통합 대시보드</li>
-<li>F-5.3 해시태그 모니터링</li>
-        </ul>
-    </nav>
+      $(document).on("click", ".js-post-blind", function () {
+        const postNo = Number($(this).data("postNo"));
+        const isBlinded = $(this).data("isBlinded") === "Y";
+        const blindReason = isBlinded ? (window.prompt("숨김 사유를 입력", "관리자 검수") || "관리자 검수") : "숨김 해제";
+        api(`/admin/posts/${postNo}/blind`, {
+          method: "PATCH",
+          data: { isBlinded, blindReason, blindedBy: 1, status: isBlinded ? "HIDDEN" : "ACTIVE" }
+        }).done(() => { showMsg("ok", `게시글 ${postNo} ${isBlinded ? "숨김" : "해제"} 완료.`); refreshAll(); })
+          .fail((xhr) => showMsg("err", xhr?.responseJSON?.message || `게시글 ${postNo} 처리 실패`));
+      });
 
-    <main class="main-content">
-        <h1 class="page-title">관리자 관제 센터</h1>
+      $("#btnAddBlockedTag").on("click", function () {
+        const tagText = $("#newTagText").val().trim();
+        const blockReason = $("#newTagReason").val().trim();
+        if (!tagText) return showMsg("err", "차단할 태그를 입력해야 한다.");
+        api("/admin/tags/blocked", { method: "POST", data: { tagText, blockReason, createdBy: 1 } })
+          .done(() => { showMsg("ok", `${tagText} 차단 등록 완료.`); $("#newTagText,#newTagReason").val(""); refreshAll(); })
+          .fail((xhr) => showMsg("err", xhr?.responseJSON?.message || "차단 태그 등록 실패"));
+      });
 
-        <section class="panel">
-            <h2 class="panel-title">F-5.1 통합 대시보드 (실시간 현황)</h2>
-            
-            <div class="dashboard-cards">
-                <div class="card">
-                    <h3>총 누적 마커</h3>
-                    <div class="number" id="kpiTotalMarkers">-</div>
-                    <div class="sub" id="kpiTotalMarkersSub">/api/v1/dd/posts (total)</div>
-                </div>
-                <div class="card">
-                    <h3>Top 해시태그 (최근 7일)</h3>
-                    <div class="number" id="kpiTopTag">-</div>
-                    <div class="sub" id="kpiTopTagSub">/api/v1/dd/tags/top?limit=1&days=7</div>
-                </div>
-            </div>
-        </section>
+      $(document).on("click", ".js-candidate-block", function () {
+        const tagText = $(this).data("tagText");
+        const blockReason = window.prompt("차단 사유를 입력", "태그 운영 정책 위반");
+        if (blockReason == null) return;
+        api("/admin/tags/blocked", { method: "POST", data: { tagText, blockReason, createdBy: 1 } })
+          .done(() => { showMsg("ok", `${tagText} 차단 등록 완료.`); refreshAll(); })
+          .fail((xhr) => showMsg("err", xhr?.responseJSON?.message || "후보 태그 차단 실패"));
+      });
 
-<section class="panel">
-            <h2 class="panel-title">F-5.3 해시태그 모니터링 (어뷰징 및 부적절 태그)</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>순위</th>
-                        <th>해시태그명</th>
-                        <th>언급량(실시간)</th>
-                        <th>위험도/상태</th>
-                        <th>관리 (순위/자동완성 제외)</th>
-                    </tr>
-                </thead>
-                <tbody id="tagsTbody"></tbody>
-            </table>
-        </section>
+      $(document).on("click", ".js-tag-toggle", function () {
+        const tagText = $(this).data("tagText");
+        const isActive = $(this).data("active") === "Y";
+        const blockReason = window.prompt("변경 사유를 입력", isActive ? "태그 차단 재활성" : "태그 차단 해제");
+        if (blockReason == null) return;
+        api(`/admin/tags/blocked/${encodeURIComponent(tagText)}`, { method: "PATCH", data: { isActive, blockReason, updatedBy: 1 } })
+          .done(() => { showMsg("ok", `${tagText} 상태 변경 완료.`); refreshAll(); })
+          .fail((xhr) => showMsg("err", xhr?.responseJSON?.message || "차단 태그 상태 변경 실패"));
+      });
 
-    </main>
-
+      $("#apiUri").val(state.apiUri);
+      refreshAll();
+    })();
+  </script>
 </body>
+
 </html>
