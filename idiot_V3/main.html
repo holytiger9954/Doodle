@@ -39,7 +39,7 @@
 
     <div id="ranking-wrapper">
         <button class="close-ranking" onclick="toggleRanking(event)">×</button>
-        <div id="ranking-slot" class="inline-slot" data-include="./partials/ranking.partial.html"></div>
+        <div id="ranking-slot" class="inline-slot" data-include="./partials/ranking.partial.html" data-init="App.pageRanking.init"></div>
     </div>
         
     <div id="ucon">
@@ -87,6 +87,8 @@
         </div>
     </div>
 
+    <div id="app-toast" class="app-toast" aria-live="polite" aria-atomic="true"></div>
+
 <script src="./js/core/app.js"></script>
 <script src="./js/core/dom.js"></script>
 <script src="./js/core/storage.js"></script>
@@ -96,6 +98,7 @@
 <script src="./js/pages/page.login.js"></script>
 <script src="./js/pages/page.join.js"></script>
 <script src="./js/pages/page.change-password.js"></script>
+<script src="./js/pages/page.ranking.js"></script>
 
 <script src="./js/ui/ui.category.selector.js"></script>
 <script src="./js/ui/ui.auth.js"></script>

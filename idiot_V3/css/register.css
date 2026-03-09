@@ -61,6 +61,22 @@
     outline: none;
 }
 
+
+.register-tags{
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    width: 100%;
+    min-height: 44px;
+    padding: 0 10px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-white);
+    outline: none;
+}
+
+.register-tags::placeholder {
+    color: rgba(224, 230, 237, 0.5);
+}
+
 .register-long{
     border: 1px solid rgba(255, 255, 255, 0.2);
     width: 100%;

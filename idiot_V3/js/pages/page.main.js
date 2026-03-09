@@ -14,6 +14,7 @@ App.pageMain = {
       App.pageMain.bindRankingWrapperClick();
       App.pageMain.bindBottomSheetClose();
       await App.pageMain.renderDefaultMarkers();
+      await App.pageRanking?.render?.();
     });
 
     App.pageMain.bindWindowMessages();
@@ -23,7 +24,7 @@ App.pageMain = {
     const container = App.dom.qs('#map');
     const options = {
       center: new kakao.maps.LatLng(App.config.defaultCenter.lat, App.config.defaultCenter.lng),
-      level: 3,
+      level: App.config.categoryOverviewMinLevel,
     };
     App.state.map = new kakao.maps.Map(container, options);
     App.state.locationMarker = new kakao.maps.Marker();
@@ -86,10 +87,12 @@ App.pageMain = {
 
   renderDefaultMarkers: async () => {
     App.state.activeCategoryIndex = -1;
+    App.state.activeTagFilter = "";
+    App.pageRanking?.syncFilterState?.();
     App.pageMain.closeBottomSheet();
     App.pageMain.clearMarkers({ preserveRegistered: false });
     const defaultItems = await App.spotApi.listDefaultVisibleSpots();
-    App.pageMain.renderMarkers(defaultItems, { keepExisting: false, preserveRegistered: false });
+    App.pageMain.renderMarkers(defaultItems, { keepExisting: false, preserveRegistered: false, source: 'overview' });
   },
 
   bindWindowMessages: () => {
@@ -104,6 +107,7 @@ App.pageMain = {
       if (payload.type === App.const.messageType.NEW_MARKER) {
         App.pageMain.renderMarkers([payload.data], { keepExisting: true, preserveRegistered: false });
         App.pageMain.refreshMypageFrame();
+        await App.pageRanking?.render?.();
         return;
       }
       if (payload.type === App.const.messageType.SELECT_LOCATION) {
@@ -128,19 +132,41 @@ App.pageMain = {
         App.pageMain.closeBottomSheet();
         App.pageMain.refreshMypageFrame();
         if (App.state.activeCategoryIndex >= 0) {
-          App.pageMain.handleCategorySelect(App.state.activeCategoryIndex);
+          await App.pageMain.handleCategorySelect(App.state.activeCategoryIndex, { keepActive: true });
         } else {
           await App.pageMain.renderDefaultMarkers();
+          await App.pageRanking?.render?.();
+        }
+        if (payload.message) {
+          App.pageMain.showToast(payload.message);
         }
       }
     });
   },
 
-  handleCategorySelect: (index) => {
-    const items = App.categoryData.resolveItemsByIndex({ index });
+  handleCategorySelect: async (index, options = {}) => {
+    const { keepActive = false } = options;
+    App.state.activeTagFilter = '';
+    App.pageRanking?.syncFilterState?.();
+
+    let items = [];
+    if (index === 6) {
+      if (!App.storage.isLoggedIn()) {
+        if (!keepActive) {
+          App.uiCategorySelector?.clearActive?.();
+        }
+        App.uiModal?.open('login');
+        App.pageMain.showToast('로그인 후 나만의 스팟을 볼 수 있어요.');
+        return;
+      }
+      items = await App.spotApi.listMySpots();
+    } else {
+      items = App.categoryData.resolveItemsByIndex({ index });
+    }
+
     App.state.activeCategoryIndex = index;
     App.pageMain.closeBottomSheet();
-    App.pageMain.renderMarkers(items);
+    App.pageMain.renderMarkers(items, { source: 'category' });
   },
 
   clearSearchState: async () => {
@@ -148,7 +174,7 @@ App.pageMain = {
   },
 
   renderMarkers: (items, options = {}) => {
-    const { preserveRegistered = false, keepExisting = false } = options;
+    const { preserveRegistered = false, keepExisting = false, source = 'default' } = options;
     const bounds = new kakao.maps.LatLngBounds();
 
     if (!keepExisting) {
@@ -171,14 +197,25 @@ App.pageMain = {
     }
 
     if (!items.length) return;
+
     if (items.length === 1) {
-      const onlyItem = items[0];
-      const target = new kakao.maps.LatLng(onlyItem.latitude, onlyItem.longitude);
-      App.state.map.panTo(target);
-      App.state.map.setLevel(App.config.singleMarkerZoomLevel);
+      const singleSpotLevel = source === 'category' || source === 'overview'
+        ? App.config.categorySingleSpotZoomLevel
+        : App.config.singleMarkerZoomLevel;
+      App.pageMain.focusSpotOnMap(items[0], { level: singleSpotLevel });
       return;
     }
+
     App.state.map.setBounds(bounds);
+
+    if (source === 'category' || source === 'overview') {
+      window.setTimeout(() => {
+        const currentLevel = App.state.map.getLevel();
+        if (currentLevel < App.config.categoryOverviewMinLevel) {
+          App.state.map.setLevel(App.config.categoryOverviewMinLevel);
+        }
+      }, 120);
+    }
   },
 
   clearMarkers: (options = {}) => {
@@ -218,6 +255,7 @@ App.pageMain = {
       const description = contentNode.querySelector('#info-desc');
       const image = contentNode.querySelector('#info-image');
       const owner = contentNode.querySelector('#info-owner');
+      const tagsBox = contentNode.querySelector('#info-tags');
 
       if (title) title.textContent = item.title || '장소 이름';
       if (category) category.textContent = item.Category || item.category || categoryMeta.label || '카테고리 정보 없음';
@@ -236,6 +274,26 @@ App.pageMain = {
           owner.classList.remove('hidden');
         } else {
           owner.classList.add('hidden');
+        }
+      }
+      if (tagsBox) {
+        const tags = App.spotApi.normalizeHashtags(item.hashtags || []);
+        tagsBox.innerHTML = '';
+        if (tags.length) {
+          tagsBox.classList.remove('hidden');
+          tags.forEach((tag) => {
+            const chip = document.createElement('button');
+            chip.type = 'button';
+            chip.className = 'info-tag-chip';
+            chip.textContent = tag;
+            chip.addEventListener('click', async () => {
+              await App.pageRanking?.applyTagFilter?.(tag);
+              App.pageMain.closeBottomSheet();
+            });
+            tagsBox.appendChild(chip);
+          });
+        } else {
+          tagsBox.classList.add('hidden');
         }
       }
 
@@ -293,15 +351,40 @@ App.pageMain = {
             }
             App.pageMain.closeBottomSheet();
             await App.pageMain.renderDefaultMarkers();
+      await App.pageRanking?.render?.();
             App.pageMain.refreshMypageFrame();
+            App.pageMain.showToast(result.message || '삭제되었습니다.');
           });
         }
       }
 
+      const detailsBox = contentNode.querySelector('#info-details');
+      const detailCategory = contentNode.querySelector('#detail-category');
+      const detailCoords = contentNode.querySelector('#detail-coords');
+      const detailOwner = contentNode.querySelector('#detail-owner');
+      const detailCreated = contentNode.querySelector('#detail-created');
+      const detailTags = contentNode.querySelector('#detail-tags');
+
+      if (detailCategory) detailCategory.textContent = item.Category || item.category || categoryMeta.label || '-';
+      if (detailCoords) detailCoords.textContent = `${Number(item.latitude).toFixed(5)}, ${Number(item.longitude).toFixed(5)}`;
+      if (detailOwner) detailOwner.textContent = item.ownerNickname || '공용 기본 데이터';
+      if (detailCreated) {
+        const created = item.createdAt ? new Date(item.createdAt) : null;
+        detailCreated.textContent = created && !Number.isNaN(created.getTime())
+          ? created.toLocaleDateString('ko-KR')
+          : '기본 제공 데이터';
+      }
+      if (detailTags) {
+        const detailTagList = App.spotApi.normalizeHashtags(item.hashtags || []);
+        detailTags.textContent = detailTagList.length ? detailTagList.join('  ') : '해시태그 없음';
+      }
+
       const detailButton = contentNode.querySelector('#info-link');
-      if (detailButton) {
+      if (detailButton && detailsBox) {
         detailButton.addEventListener('click', () => {
-          alert('상세보기는 추후 연결 예정입니다.');
+          const willOpen = !detailsBox.classList.contains('active');
+          detailsBox.classList.toggle('active', willOpen);
+          detailButton.textContent = willOpen ? '상세 접기' : '상세보기';
         });
       }
 
@@ -314,6 +397,34 @@ App.pageMain = {
     } catch (error) {
       console.error('정보창 파일 로드 중 오류 발생:', error);
     }
+  },
+
+  focusSpotOnMap: (item, options = {}) => {
+    const lat = Number(item?.latitude);
+    const lng = Number(item?.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng) || !App.state.map) return;
+
+    const target = new kakao.maps.LatLng(lat, lng);
+    App.state.map.setLevel(options.level || App.config.singleMarkerZoomLevel);
+    App.state.map.setCenter(target);
+    App.state.map.panTo(target);
+
+    // pan 애니메이션이나 레벨 변경 직후 중심이 약간 어긋나는 경우가 있어 한 번 더 고정한다.
+    window.clearTimeout(App.state.focusTimer);
+    App.state.focusTimer = window.setTimeout(() => {
+      App.state.map?.setCenter(target);
+    }, 220);
+  },
+
+  showToast: (message = '') => {
+    const toast = App.dom.qs('#app-toast');
+    if (!toast || !message) return;
+    toast.textContent = message;
+    toast.classList.add('active');
+    window.clearTimeout(App.state.toastTimer);
+    App.state.toastTimer = window.setTimeout(() => {
+      toast.classList.remove('active');
+    }, 1800);
   },
 
   closeBottomSheet: () => {

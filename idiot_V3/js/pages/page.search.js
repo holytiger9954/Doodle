@@ -220,6 +220,7 @@ App.pageSearch = {
           item.address,
           item.description,
           item.content,
+          ...(item.hashtags || []),
         ]
           .filter(Boolean)
           .join(' ')
@@ -262,11 +263,13 @@ App.pageSearch = {
   },
 
   search: async (keyword) => {
-    const [internalResults, externalResults] = await Promise.all([
-      App.pageSearch.searchInternalItems(keyword),
-      App.pageSearch.searchExternalPlaces(keyword),
-    ]);
+    const isHashQuery = keyword.trim().startsWith('#');
+    const internalResults = await App.pageSearch.searchInternalItems(keyword);
+    if (isHashQuery) {
+      return App.pageSearch.dedupeResults(internalResults).slice(0, App.pageSearch.maxResults);
+    }
 
+    const externalResults = await App.pageSearch.searchExternalPlaces(keyword);
     return App.pageSearch.dedupeResults([
       ...internalResults,
       ...externalResults,
@@ -369,6 +372,7 @@ App.pageSearch = {
     }
 
     mainPage.renderMarkers([item]);
+    mainPage.focusSpotOnMap?.(item);
     mainPage.openInfoSheet(item);
   },
 

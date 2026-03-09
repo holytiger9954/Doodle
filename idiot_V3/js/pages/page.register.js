@@ -6,6 +6,7 @@ App.pageRegister = {
     latitudeInput: App.dom.qs('.register-lat'),
     longitudeInput: App.dom.qs('.register-long'),
     contentInput: App.dom.qs('.register-content'),
+    hashtagInput: App.dom.qs('#hashtags'),
     privateCheckbox: App.dom.qs('.register-private-btn'),
     actionButtons: App.dom.qsa('.register-content-btn'),
   }),
@@ -27,6 +28,8 @@ App.pageRegister = {
       elements.longitudeInput.value = lng;
     }
   },
+
+  parseHashtags: (raw = '') => App.spotApi.normalizeHashtags(raw),
 
   /** 등록/취소 버튼 이벤트 연결 */
   bindButtons: (elements) => {
@@ -52,12 +55,16 @@ App.pageRegister = {
       return;
     }
 
+    const hashtags = App.pageRegister.parseHashtags(elements.hashtagInput?.value || '');
     const spot = {
-      title: elements.contentInput.value,
+      title: elements.contentInput.value.trim(),
+      description: elements.contentInput.value.trim(),
+      address: '',
       latitude: Number(elements.latitudeInput.value),
       longitude: Number(elements.longitudeInput.value),
       Category: elements.categorySelect.value,
       isPrivate: Boolean(elements.privateCheckbox.checked),
+      hashtags,
     };
 
     await App.spotApi.saveUserSpot(spot);

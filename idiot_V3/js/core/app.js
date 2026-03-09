@@ -13,6 +13,8 @@ App.config = {
   defaultCenter: { lat: 36.8115, lng: 127.1462 },
   searchZoomLevel: 3,
   singleMarkerZoomLevel: 1,
+  categoryOverviewMinLevel: 7,
+  categorySingleSpotZoomLevel: 5,
 };
 
 /** 앱 공통 상수. */
@@ -24,6 +26,7 @@ App.const = {
     SELECT_CATEGORY: 'selectCategory',
     OPEN_MODAL: 'openModal',
     SPOTS_CHANGED: 'spotsChanged',
+    SHOW_TOAST: 'showToast',
   },
 };
 
@@ -36,4 +39,5 @@ App.state = {
   registeredMarkers: [],
   activeCategoryIndex: -1,
   activeInfoOverlay: null,
+  activeTagFilter: '',
 };

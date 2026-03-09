@@ -13,16 +13,17 @@ App.uiCategorySelector = {
       button.dataset.bound = 'true';
 
       App.dom.on(button, 'click', () => {
+        const selectedIndex = Number(button.dataset.index ?? index);
         App.uiCategorySelector.setActive(index);
         // 1) 기존 iframe 호환
         if (window.parent && window.parent !== window) {
-          App.message.postToParent(App.const.messageType.SELECT_CATEGORY, { index });
+          App.message.postToParent(App.const.messageType.SELECT_CATEGORY, { index: selectedIndex });
           return;
         }
 
         // 2) include 구조에서는 main 컨트롤러를 직접 호출
         if (window.App?.pageMain?.handleCategorySelect) {
-          window.App.pageMain.handleCategorySelect(index);
+          window.App.pageMain.handleCategorySelect(selectedIndex);
         }
       });
     });

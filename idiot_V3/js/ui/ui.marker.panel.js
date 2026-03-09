@@ -99,7 +99,7 @@ App.uiMarkerPanel = {
           }
           const nextItems = await App.uiMarkerPanel.resolvePanelItems(panelKey);
           App.uiMarkerPanel.renderItemList(nextItems, markerContainer, panelKey);
-          App.message.postToParent(App.const.messageType.SPOTS_CHANGED, { removedSpotId: result.removedSpotId });
+          App.message.postToParent(App.const.messageType.SPOTS_CHANGED, { removedSpotId: result.removedSpotId, message: result.message || '삭제되었습니다.' });
         });
       } else {
         box.innerHTML = `<p>${item.title}</p>`;

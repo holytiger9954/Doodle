@@ -26,6 +26,7 @@ App.spotApi = {
       ...spot,
       ownerId: savedUser.loginId || '',
       ownerNickname: savedUser.nickname || '게스트',
+      createdAt: spot.createdAt || new Date().toISOString(),
     };
     spots.push(spotWithOwner);
     App.storage.setJson(App.storage.keys.userSpots, spots);
@@ -130,7 +131,7 @@ App.spotApi = {
     });
     App.storage.setJson(App.storage.keys.favoriteSpotsByUser, favoriteMap);
 
-    return { success: true, message: '등록한 장소를 삭제했습니다.', removedSpot: targetSpot, removedSpotId: targetId };
+    return { success: true, message: '삭제되었습니다.', removedSpot: targetSpot, removedSpotId: targetId };
   },
 
   /** 현재 로그인 사용자가 등록한 장소인지 여부 */
@@ -163,4 +164,38 @@ App.spotApi = {
     const lng = spot.longitude ?? '';
     return `${title}::${lat}::${lng}`;
   },
+
+  normalizeHashtags: (raw = '') => {
+    if (Array.isArray(raw)) {
+      return [...new Set(raw.map((tag) => `#${String(tag).replace(/^#+/, '').trim()}`).filter((tag) => tag !== '#'))];
+    }
+
+    return [...new Set(String(raw)
+      .split(/[\s,]+/)
+      .map((tag) => tag.trim())
+      .filter(Boolean)
+      .map((tag) => `#${tag.replace(/^#+/, '')}`)
+      .filter((tag) => tag !== '#'))];
+  },
+
+  getTagRanking: async (limit = 10) => {
+    const allSpots = await App.spotApi.listDefaultVisibleSpots();
+    const counts = {};
+    allSpots.forEach((spot) => {
+      App.spotApi.normalizeHashtags(spot.hashtags || []).forEach((tag) => {
+        counts[tag] = (counts[tag] || 0) + 1;
+      });
+    });
+
+    return Object.entries(counts)
+      .map(([tag, count]) => ({ tag, count }))
+      .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, 'ko'))
+      .slice(0, limit);
+  },
+
+  filterSpotsByTag: async (tag) => {
+    const normalized = App.spotApi.normalizeHashtags([tag])[0];
+    const allSpots = await App.spotApi.listDefaultVisibleSpots();
+    return allSpots.filter((spot) => App.spotApi.normalizeHashtags(spot.hashtags || []).includes(normalized));
+  }
 };

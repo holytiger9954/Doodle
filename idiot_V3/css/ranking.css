@@ -120,3 +120,90 @@
         font-size: 0.76rem;
     }
 }
+
+.ranking-subtitle {
+    margin: -6px 0 16px;
+    color: rgba(255,255,255,0.76);
+    font-size: 0.92rem;
+    line-height: 1.45;
+}
+
+.ranking-item {
+    width: 100%;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+}
+
+.ranking-filter-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 14px;
+    padding: 10px 12px;
+    border-radius: 12px;
+    background: rgba(255,255,255,0.08);
+}
+
+.ranking-filter-bar.hidden,
+.ranking-empty.hidden {
+    display: none !important;
+}
+
+#ranking-filter-clear {
+    border: 1px solid rgba(255,255,255,0.2);
+    background: rgba(255,255,255,0.08);
+    color: white;
+    border-radius: 999px;
+    padding: 6px 12px;
+    cursor: pointer;
+}
+
+.ranking-empty {
+    padding: 16px 0 8px;
+    color: rgba(255,255,255,0.78);
+}
+
+
+/* 랭킹 패널 가독성 보강 */
+.ranking-container {
+    font-family: inherit;
+}
+
+.ranking-item {
+    -webkit-appearance: none;
+    appearance: none;
+    background: rgba(255, 255, 255, 0.07);
+    color: var(--text-white);
+    font: inherit;
+    line-height: 1.35;
+}
+
+.ranking-item:focus-visible {
+    outline: 2px solid var(--point-orange);
+    outline-offset: 2px;
+}
+
+.hashtag-name {
+    color: #ffffff;
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.count-text {
+    color: rgba(255,255,255,0.92);
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+}
+
+#ranking-filter-text {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.ranking-empty {
+    line-height: 1.5;
+}
