@@ -1,17 +1,19 @@
-/** 로그인 페이지 컨트롤러. */
+/** 로그인 페이지/모달 컨트롤러. */
 App.pageLogin = {
   /** DOM 요소 수집 */
-  getElements: () => ({
-    form: App.dom.qs('form'),
-    loginErrorMessage: App.dom.qs('#wo-login'),
-    loginIdInput: App.dom.qs('#input-dd-id'),
-    passwordInput: App.dom.qs('#input-dd-password'),
+  getElements: (root = document) => ({
+    root,
+    form: App.dom.qs('form', root),
+    loginErrorMessage: App.dom.qs('#wo-login', root),
+    loginIdInput: App.dom.qs('#input-dd-id', root),
+    passwordInput: App.dom.qs('#input-dd-password', root),
   }),
 
   /** 초기화 */
-  init: () => {
-    const elements = App.pageLogin.getElements();
-    if (!elements.form) return;
+  init: (root = document) => {
+    const elements = App.pageLogin.getElements(root);
+    if (!elements.form || elements.form.dataset.bound === 'true') return;
+    elements.form.dataset.bound = 'true';
     App.pageLogin.bindSubmit(elements);
   },
 
@@ -25,7 +27,15 @@ App.pageLogin = {
       });
 
       if (result.success) {
-        location.href = './main.html';
+        if (App.uiModal) {
+          App.uiModal.close();
+        }
+        if (window.parent && window.parent !== window) {
+          window.parent.postMessage({ type: 'authChanged' }, '*');
+        }
+        if (App.pageMain?.refreshMypageFrame) {
+          App.pageMain.refreshMypageFrame();
+        }
         return;
       }
 
@@ -37,4 +47,4 @@ App.pageLogin = {
   },
 };
 
-document.addEventListener('DOMContentLoaded', App.pageLogin.init);
+document.addEventListener('DOMContentLoaded', () => App.pageLogin.init());

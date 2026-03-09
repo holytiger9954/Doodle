@@ -9,7 +9,7 @@
 }
 
 /* 제목 스타일: 로그인과 일치 */
-h2 {
+.dd-auth-box h2 {
     text-align: left;
     color: var(--text-white) !important; /* HTML 인라인 스타일 #222 대비 */
     margin-bottom: 25px;

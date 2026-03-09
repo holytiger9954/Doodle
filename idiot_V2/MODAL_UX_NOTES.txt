@@ -1,0 +1,17 @@
+변경 내용 요약
+- login / join / report / changePw 를 main.html 공용 오버레이 모달로 전환
+- 마이페이지 iframe 에서 페이지 이동 대신 postMessage 로 모달 오픈 요청
+- 상세 바텀시트의 신고 버튼도 report.html 이동 대신 신고 모달 오픈
+- 모달 공통 닫기 지원: X 버튼 / 배경 클릭 / Esc
+- 로그인 성공 시 메인 페이지 유지 + 마이페이지 iframe 새로고침
+- 회원가입 성공 시 로그인 모달로 자연스럽게 전환
+- 비밀번호 변경 성공 시 로그인 모달로 전환
+- 신고 접수는 인라인 메시지 후 자동 닫기
+
+추가 파일
+- js/ui/ui.modal.js
+- js/ui/ui.standalone-modal.js
+- partials/login.modal.html
+- partials/join.modal.html
+- partials/changePw.modal.html
+- partials/report.modal.html

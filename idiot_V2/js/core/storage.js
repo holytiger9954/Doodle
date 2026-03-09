@@ -9,6 +9,7 @@ App.storage = {
     savedNickname: 'savedNn',
     login: 'login',
     userSpots: 'userSpots',
+    favoriteSpotsByUser: 'favoriteSpotsByUser',
   },
   get: (key, fallback = '') => localStorage.getItem(key) ?? fallback,
   set: (key, value) => localStorage.setItem(key, value),
@@ -29,4 +30,5 @@ App.storage = {
     password: App.storage.get(App.storage.keys.savedPw),
     nickname: App.storage.get(App.storage.keys.savedNickname),
   }),
+  getCurrentLoginId: () => App.storage.get(App.storage.keys.savedId),
 };

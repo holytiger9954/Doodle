@@ -1,0 +1,16 @@
+<div class="dd-auth-box">
+  <span class="close-btn" data-modal-close>&times;</span>
+  <div id="login-section">
+    <h2>로그인</h2>
+    <form>
+      <input type="text" id="input-dd-id" class="dd-input" style="color:#222;" placeholder="아이디" required minlength="4" maxlength="12" pattern="^[a-zA-Z][a-zA-Z0-9]*$">
+      <input type="password" id="input-dd-password" class="dd-input" style="color:#222;" placeholder="비밀번호" required minlength="4" maxlength="12" pattern="^[a-zA-Z][a-zA-Z0-9]*$">
+      <p class="message" id="wo-login"></p>
+      <button type="submit" class="auth-submit-btn">접속</button>
+      <div class="a-parent">
+        <a href="#" data-open-modal="join">아직 회원이 아니신가요? (회원가입)</a>
+        <a href="#" data-open-modal="changePassword">비밀번호 변경</a>
+      </div>
+    </form>
+  </div>
+</div>

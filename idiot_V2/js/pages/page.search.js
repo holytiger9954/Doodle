@@ -1,11 +1,6 @@
 /**
  * 검색 UI 컨트롤러.
- *
- * 개선 포인트:
- * 1) 입력만 하면 끝나는 단순 panTo 가 아니라 검색 결과 드롭다운을 보여준다.
- * 2) 프로젝트 내부 데이터(카테고리 + 사용자 등록 스팟)를 먼저 검색한다.
- * 3) 내부 결과가 부족하면 카카오 장소검색 결과를 함께 섞어 보여준다.
- * 4) 결과 클릭 시 지도 이동 + 상세 바텀시트까지 연결한다.
+ * 포커스 시 결과 오버레이를 먼저 띄우고, 그 안에서 안내 문구 -> 실제 검색 결과로 전환한다.
  */
 App.pageSearch = {
   maxResults: 6,
@@ -18,12 +13,12 @@ App.pageSearch = {
     const submitButton = App.dom.qs('#search-submit', root) || App.dom.qs('.cursor-pointer', root);
     const clearButton = App.dom.qs('#search-clear', root);
     const dropdown = App.dom.qs('#search-dropdown', root);
-    const feedback = App.dom.qs('#search-feedback', root);
     const resultList = App.dom.qs('#search-result-list', root);
     const emptyElement = App.dom.qs('#search-empty', root);
     const countElement = App.dom.qs('#search-result-count', root);
+    const titleElement = App.dom.qs('#search-dropdown-title', root);
 
-    if (!searchInput || !submitButton || !dropdown || !resultList || !emptyElement || !countElement) return;
+    if (!searchInput || !submitButton || !dropdown || !resultList || !emptyElement || !countElement || !titleElement) return;
     if (searchInput.dataset.bound === 'true') return;
     searchInput.dataset.bound = 'true';
 
@@ -33,22 +28,19 @@ App.pageSearch = {
       submitButton,
       clearButton,
       dropdown,
-      feedback,
       resultList,
       emptyElement,
       countElement,
+      titleElement,
     };
 
     const runSearch = async () => {
       const keyword = searchInput.value.trim();
       if (!keyword) {
-        App.pageSearch.hideDropdown();
-        App.pageSearch.showFeedback('검색어를 입력해주세요.');
+        App.pageSearch.showGuideMessage('검색어를 입력해 원하는 장소를 찾아보세요.');
         searchInput.focus();
         return;
       }
-
-      App.pageSearch.hideFeedback();
 
       App.pageSearch.setSearching(true);
       try {
@@ -58,6 +50,33 @@ App.pageSearch = {
         App.pageSearch.setSearching(false);
       }
     };
+
+    const openGuideOverlay = () => {
+      if (!searchInput.value.trim()) {
+        App.pageSearch.showGuideMessage('검색어를 입력해 원하는 장소를 찾아보세요.');
+      }
+    };
+
+    const focusAndOpenGuide = (event) => {
+      if (event?.target?.closest && event.target.closest('#search-clear, #search-submit')) return;
+      if (document.activeElement !== searchInput) {
+        searchInput.focus();
+      }
+      openGuideOverlay();
+    };
+
+    App.dom.on(searchInput, 'focus', openGuideOverlay);
+    App.dom.on(searchInput, 'click', openGuideOverlay);
+    App.dom.on(searchInput, 'focusin', openGuideOverlay);
+    App.dom.on(searchRoot, 'click', focusAndOpenGuide);
+    const parentBox = App.dom.qs('#search-parent', root);
+    if (parentBox) {
+      App.dom.on(parentBox, 'click', focusAndOpenGuide);
+      App.dom.on(parentBox, 'mousedown', (event) => {
+        if (event?.target?.closest && event.target.closest('#search-clear, #search-submit')) return;
+        event.preventDefault();
+      });
+    }
 
     App.dom.on(searchInput, 'keydown', (event) => {
       if (event.key === 'ArrowDown') {
@@ -84,36 +103,42 @@ App.pageSearch = {
         }
         runSearch();
       }
+
       if (event.key === 'Escape') {
         App.pageSearch.hideDropdown();
-        App.pageSearch.hideFeedback();
       }
     });
 
-    App.dom.on(searchInput, 'input', () => {
-      const hasValue = searchInput.value.trim().length > 0;
+    App.dom.on(searchInput, 'input', async () => {
+      const keyword = searchInput.value.trim();
+      const hasValue = keyword.length > 0;
       if (clearButton) clearButton.classList.toggle('visible', hasValue);
-      if (hasValue) App.pageSearch.hideFeedback();
+
       if (!hasValue) {
-        App.pageSearch.hideDropdown();
-        App.pageSearch.showFeedback('검색어를 입력하면 장소 추천이 표시됩니다.');
+        App.pageSearch.showGuideMessage('검색어를 입력해 원하는 장소를 찾아보세요.');
+        return;
+      }
+
+      App.pageSearch.setSearching(true);
+      try {
+        const results = await App.pageSearch.search(keyword);
+        App.pageSearch.renderResults(results, keyword);
+      } finally {
+        App.pageSearch.setSearching(false);
       }
     });
 
     App.dom.on(submitButton, 'click', runSearch);
 
-    App.dom.on(clearButton, 'click', () => {
+    App.dom.on(clearButton, 'click', async () => {
       searchInput.value = '';
       clearButton.classList.remove('visible');
-      App.pageSearch.hideDropdown();
-      App.pageSearch.showFeedback('검색이 초기화되었습니다.');
+      App.pageSearch.showGuideMessage('검색어를 입력해 원하는 장소를 찾아보세요.');
       if (window.App?.pageMain?.clearSearchState) {
-        window.App.pageMain.clearSearchState();
+        await window.App.pageMain.clearSearchState();
       }
       searchInput.focus();
     });
-
-    App.pageSearch.showFeedback('검색어를 입력하면 장소 추천이 표시됩니다.');
 
     App.dom.on(document, 'click', (event) => {
       if (!App.pageSearch.elements?.root?.contains(event.target)) {
@@ -128,6 +153,7 @@ App.pageSearch = {
 
     elements.root.classList.toggle('is-searching', isSearching);
     elements.submitButton.disabled = isSearching;
+    elements.titleElement.textContent = isSearching ? '검색 중' : '검색 결과';
     if (elements.input) {
       elements.input.setAttribute('aria-busy', isSearching ? 'true' : 'false');
     }
@@ -151,14 +177,7 @@ App.pageSearch = {
   },
 
   getInternalItems: async () => {
-    const categoryCollections = [
-      ...(App.categoryData.favoriteItems || []),
-      ...(App.categoryData.hospitalItems || []),
-      ...(App.categoryData.gymItems || []),
-      ...(App.categoryData.policeItems || []),
-      ...(App.categoryData.smokingItems || []),
-      ...(App.categoryData.toiletItems || []),
-    ].map((item) => ({
+    const categoryCollections = App.categoryData.getAllBaseItems().map((item) => ({
       ...item,
       source: 'internal',
       address: item.address || '',
@@ -254,18 +273,18 @@ App.pageSearch = {
     ]).slice(0, App.pageSearch.maxResults);
   },
 
-  showFeedback: (message) => {
-    const feedback = App.pageSearch.elements?.feedback;
-    if (!feedback) return;
-    feedback.textContent = message;
-    feedback.classList.remove('hidden');
-  },
-
-  hideFeedback: () => {
-    const feedback = App.pageSearch.elements?.feedback;
-    if (!feedback) return;
-    feedback.classList.add('hidden');
-    feedback.textContent = '';
+  showGuideMessage: (message) => {
+    const elements = App.pageSearch.elements;
+    if (!elements) return;
+    App.pageSearch.currentResults = [];
+    App.pageSearch.activeIndex = -1;
+    elements.resultList.innerHTML = '';
+    elements.titleElement.textContent = '검색 안내';
+    elements.countElement.textContent = '';
+    elements.emptyElement.textContent = message;
+    elements.emptyElement.classList.remove('hidden');
+    elements.dropdown.classList.remove('hidden');
+    elements.root.classList.remove('is-searching');
   },
 
   moveActive: (step) => {
@@ -295,14 +314,13 @@ App.pageSearch = {
     elements.countElement.textContent = `${results.length}건`;
     elements.emptyElement.classList.toggle('hidden', results.length > 0);
     elements.dropdown.classList.remove('hidden');
+    elements.titleElement.textContent = '검색 결과';
 
     if (!results.length) {
-      App.pageSearch.showFeedback(`"${keyword}" 검색 결과가 없습니다.`);
       App.dom.setText(elements.emptyElement, `"${keyword}" 검색 결과가 없습니다.`);
       return;
     }
 
-    App.pageSearch.hideFeedback();
     const fragment = document.createDocumentFragment();
     results.forEach((item, index) => {
       const button = document.createElement('button');
@@ -310,58 +328,56 @@ App.pageSearch = {
       button.className = 'search-result-item';
       button.setAttribute('role', 'option');
       button.setAttribute('aria-selected', index === 0 ? 'true' : 'false');
+
+      const isExternal = item.source === 'external';
       button.innerHTML = `
         <span class="search-result-text">
-          <strong>${item.title || '장소 이름'}</strong>
-          <small>${item.address || item.description || item.Category || '상세 정보 없음'}</small>
+          <strong>${item.title || '이름 없음'}</strong>
+          <small>${item.address || item.description || '상세 정보 없음'}</small>
         </span>
-        <span class="search-result-badge ${item.source === 'external' ? 'external' : 'internal'}">
-          ${item.source === 'external' ? '장소 검색' : '등록 스팟'}
+        <span class="search-result-badge ${isExternal ? 'external' : 'internal'}">
+          ${isExternal ? '장소 검색' : '등록 스팟'}
         </span>
       `;
-      button.addEventListener('click', () => App.pageSearch.selectResult(item));
-      const listItem = document.createElement('li');
-      listItem.appendChild(button);
-      fragment.appendChild(listItem);
+
+      App.dom.on(button, 'mouseenter', () => {
+        App.pageSearch.activeIndex = index;
+        App.pageSearch.syncActiveResult();
+      });
+
+      App.dom.on(button, 'click', () => {
+        App.pageSearch.selectResult(item);
+      });
+
+      fragment.appendChild(button);
     });
+
     elements.resultList.appendChild(fragment);
     App.pageSearch.syncActiveResult();
   },
 
   selectResult: (item) => {
-    const { kakaoMapObject, map, mainPage } = App.pageSearch.getHostContext();
-    if (!kakaoMapObject || !map) return;
+    const { mainPage } = App.pageSearch.getHostContext();
+    if (!mainPage) return;
 
-    const target = new kakaoMapObject.maps.LatLng(item.latitude, item.longitude);
-    map.panTo(target);
-    map.setLevel(App.config.singleMarkerZoomLevel);
-
-    if (mainPage?.renderMarkers) {
-      mainPage.renderMarkers([item], { preserveRegistered: true });
-    }
-    if (window.App?.uiCategorySelector?.clearActive) {
-      window.App.uiCategorySelector.clearActive();
-    }
-    if (mainPage?.openInfoSheet) {
-      mainPage.openInfoSheet(item);
-    }
-
+    App.pageSearch.hideDropdown();
     if (App.pageSearch.elements?.input) {
       App.pageSearch.elements.input.value = item.title || '';
     }
-    App.pageSearch.hideDropdown();
-    App.pageSearch.showFeedback(`"${item.title || '선택한 장소'}" 상세 정보를 열었습니다.`);
+    if (App.pageSearch.elements?.clearButton) {
+      App.pageSearch.elements.clearButton.classList.toggle('visible', Boolean(item.title));
+    }
+
+    mainPage.renderMarkers([item]);
+    mainPage.openInfoSheet(item);
   },
 
   hideDropdown: () => {
     const elements = App.pageSearch.elements;
     if (!elements) return;
     elements.dropdown.classList.add('hidden');
-    elements.resultList.innerHTML = '';
-    elements.countElement.textContent = '0건';
+    elements.root.classList.remove('is-searching');
     App.pageSearch.currentResults = [];
     App.pageSearch.activeIndex = -1;
   },
 };
-
-document.addEventListener('DOMContentLoaded', () => App.pageSearch.init());

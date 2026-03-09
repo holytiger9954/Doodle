@@ -1,22 +1,24 @@
-/** 비밀번호 변경 페이지 컨트롤러. */
+/** 비밀번호 변경 페이지/모달 컨트롤러. */
 App.pageChangePassword = {
   /** DOM 요소 수집 */
-  getElements: () => ({
-    form: App.dom.qs('form'),
-    loginIdInput: App.dom.qs('#input-dd-id'),
-    currentPasswordInput: App.dom.qs('#input-dd-pw'),
-    newPasswordInput: App.dom.qs('#input-dd-new-pw1'),
-    newPasswordConfirmInput: App.dom.qs('#input-dd-new-pw2'),
-    loginIdMessage: App.dom.qs('#wo-id'),
-    currentPasswordMessage: App.dom.qs('#wo-pw'),
-    newPasswordMessage: App.dom.qs('#wo-pw1'),
-    newPasswordConfirmMessage: App.dom.qs('#wo-pw2'),
+  getElements: (root = document) => ({
+    root,
+    form: App.dom.qs('form', root),
+    loginIdInput: App.dom.qs('#input-dd-id', root),
+    currentPasswordInput: App.dom.qs('#input-dd-pw', root),
+    newPasswordInput: App.dom.qs('#input-dd-new-pw1', root),
+    newPasswordConfirmInput: App.dom.qs('#input-dd-new-pw2', root),
+    loginIdMessage: App.dom.qs('#wo-id', root),
+    currentPasswordMessage: App.dom.qs('#wo-pw', root),
+    newPasswordMessage: App.dom.qs('#wo-pw1', root),
+    newPasswordConfirmMessage: App.dom.qs('#wo-pw2', root),
   }),
 
   /** 초기화 */
-  init: () => {
-    const elements = App.pageChangePassword.getElements();
-    if (!elements.form) return;
+  init: (root = document) => {
+    const elements = App.pageChangePassword.getElements(root);
+    if (!elements.form || elements.form.dataset.bound === 'true') return;
+    elements.form.dataset.bound = 'true';
     App.pageChangePassword.bindValidation(elements);
     App.pageChangePassword.bindSubmit(elements);
   },
@@ -39,7 +41,7 @@ App.pageChangePassword = {
     App.dom.on(elements.form, 'submit', async (event) => {
       event.preventDefault();
       if (elements.newPasswordInput.value !== elements.newPasswordConfirmInput.value) {
-        alert('새 비밀번호가 일치하지 않습니다.');
+        App.uiAuth.showMessage(elements.newPasswordConfirmMessage, '새 비밀번호가 일치하지 않습니다.');
         return;
       }
 
@@ -54,10 +56,14 @@ App.pageChangePassword = {
         return;
       }
 
+      if (App.uiModal) {
+        App.uiModal.open('login');
+        return;
+      }
       alert(result.message);
       location.href = './login.html';
     });
   },
 };
 
-document.addEventListener('DOMContentLoaded', App.pageChangePassword.init);
+document.addEventListener('DOMContentLoaded', () => App.pageChangePassword.init());

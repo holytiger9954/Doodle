@@ -6,14 +6,14 @@ App.pageMain = {
   init: () => {
     if (!window.kakao?.maps) return;
 
-    kakao.maps.load(() => {
+    kakao.maps.load(async () => {
       App.pageMain.createMap();
       App.pageMain.bindMapClickForRegister();
       App.pageMain.bindLocationButton();
       App.pageMain.bindRegisterButton();
       App.pageMain.bindRankingWrapperClick();
-    App.pageMain.bindBottomSheetClose();
-      App.pageMain.restoreUserSpots();
+      App.pageMain.bindBottomSheetClose();
+      await App.pageMain.renderDefaultMarkers();
     });
 
     App.pageMain.bindWindowMessages();
@@ -84,15 +84,16 @@ App.pageMain = {
     App.state.map?.setCursor('default');
   },
 
-  restoreUserSpots: async () => {
-    const userSpots = await App.spotApi.listUserSpots();
-    if (userSpots.length) {
-      App.pageMain.renderMarkers(userSpots, { preserveRegistered: true, keepExisting: true });
-    }
+  renderDefaultMarkers: async () => {
+    App.state.activeCategoryIndex = -1;
+    App.pageMain.closeBottomSheet();
+    App.pageMain.clearMarkers({ preserveRegistered: false });
+    const defaultItems = await App.spotApi.listDefaultVisibleSpots();
+    App.pageMain.renderMarkers(defaultItems, { keepExisting: false, preserveRegistered: false });
   },
 
   bindWindowMessages: () => {
-    App.dom.on(window, 'message', (event) => {
+    App.dom.on(window, 'message', async (event) => {
       if (event.data === App.const.messageType.CLOSE_REGISTER) {
         App.dom.qs('#register-modal')?.classList.add('hidden');
         App.pageMain.resetRegisterMode();
@@ -101,7 +102,8 @@ App.pageMain = {
 
       const payload = event.data || {};
       if (payload.type === App.const.messageType.NEW_MARKER) {
-        App.pageMain.renderMarkers([payload.data], { preserveRegistered: true });
+        App.pageMain.renderMarkers([payload.data], { keepExisting: true, preserveRegistered: false });
+        App.pageMain.refreshMypageFrame();
         return;
       }
       if (payload.type === App.const.messageType.SELECT_LOCATION) {
@@ -112,6 +114,24 @@ App.pageMain = {
       }
       if (payload.type === App.const.messageType.SELECT_CATEGORY) {
         App.pageMain.handleCategorySelect(payload.index);
+        return;
+      }
+      if (payload.type === App.const.messageType.OPEN_MODAL) {
+        App.uiModal?.openFromMessage(payload);
+        return;
+      }
+      if (payload.type === 'authChanged') {
+        App.pageMain.refreshMypageFrame();
+        return;
+      }
+      if (payload.type === App.const.messageType.SPOTS_CHANGED) {
+        App.pageMain.closeBottomSheet();
+        App.pageMain.refreshMypageFrame();
+        if (App.state.activeCategoryIndex >= 0) {
+          App.pageMain.handleCategorySelect(App.state.activeCategoryIndex);
+        } else {
+          await App.pageMain.renderDefaultMarkers();
+        }
       }
     });
   },
@@ -124,18 +144,7 @@ App.pageMain = {
   },
 
   clearSearchState: async () => {
-    App.pageMain.closeBottomSheet();
-    if (App.state.activeCategoryIndex >= 0) {
-      App.pageMain.handleCategorySelect(App.state.activeCategoryIndex);
-      return;
-    }
-
-    App.pageMain.clearMarkers({ preserveRegistered: true });
-    const defaultItems = App.categoryData.resolveItemsByIndex({ index: 0 });
-    if (defaultItems?.length) {
-      App.pageMain.renderMarkers(defaultItems, { keepExisting: false, preserveRegistered: true });
-    }
-    await App.pageMain.restoreUserSpots();
+    await App.pageMain.renderDefaultMarkers();
   },
 
   renderMarkers: (items, options = {}) => {
@@ -180,10 +189,13 @@ App.pageMain = {
       marker.setMap(null);
     });
     App.state.markers = preserveRegistered ? [...App.state.registeredMarkers] : [];
+    if (!preserveRegistered) {
+      App.state.registeredMarkers = [];
+    }
   },
 
   /**
-   * 상세 바텀시트는 단일 info.html 템플릿만 사용한다.
+   * 상세 팝업은 단일 info.html 템플릿만 사용한다.
    * 카테고리별 차이는 이미지/문구만 동적으로 채운다.
    */
   openInfoSheet: async (item) => {
@@ -205,6 +217,7 @@ App.pageMain = {
       const address = contentNode.querySelector('#info-address');
       const description = contentNode.querySelector('#info-desc');
       const image = contentNode.querySelector('#info-image');
+      const owner = contentNode.querySelector('#info-owner');
 
       if (title) title.textContent = item.title || '장소 이름';
       if (category) category.textContent = item.Category || item.category || categoryMeta.label || '카테고리 정보 없음';
@@ -217,6 +230,14 @@ App.pageMain = {
         image.src = item.image || categoryMeta.image || './img/marker.png';
         image.alt = `${categoryMeta.label || '장소'} 이미지`;
       }
+      if (owner) {
+        if (item.ownerNickname) {
+          owner.textContent = `등록자 : ${item.ownerNickname}`;
+          owner.classList.remove('hidden');
+        } else {
+          owner.classList.add('hidden');
+        }
+      }
 
       const closeButton = contentNode.querySelector('.close-btn');
       if (closeButton) closeButton.addEventListener('click', App.pageMain.closeBottomSheet);
@@ -224,8 +245,57 @@ App.pageMain = {
       const reportButton = contentNode.querySelector('#report');
       if (reportButton) {
         reportButton.addEventListener('click', () => {
-          window.location.href = './report.html';
+          App.uiModal?.open('report', { item });
         });
+      }
+
+      const favoriteButton = contentNode.querySelector('#favorite-toggle');
+      const deleteButton = contentNode.querySelector('#delete-spot');
+      const isOwnedSpot = App.spotApi.isOwnedByCurrentUser(item);
+
+      if (favoriteButton) {
+        if (isOwnedSpot) {
+          favoriteButton.classList.add('hidden');
+        } else {
+          const syncFavoriteButton = async () => {
+            const isFavorite = await App.spotApi.isFavoriteSpot(item);
+            favoriteButton.textContent = isFavorite ? '찜해제' : '찜하기';
+            favoriteButton.classList.toggle('is-favorite', isFavorite);
+          };
+
+          await syncFavoriteButton();
+
+          favoriteButton.addEventListener('click', async () => {
+            if (!App.storage.isLoggedIn()) {
+              App.uiModal?.open('login');
+              return;
+            }
+            const result = await App.spotApi.toggleFavoriteSpot(item);
+            if (!result.success) return;
+            await syncFavoriteButton();
+            App.pageMain.refreshMypageFrame();
+          });
+        }
+      }
+
+      if (deleteButton) {
+        if (!isOwnedSpot) {
+          deleteButton.classList.add('hidden');
+        } else {
+          deleteButton.classList.remove('hidden');
+          deleteButton.addEventListener('click', async () => {
+            const ok = window.confirm('내가 등록한 이 장소를 삭제할까요?');
+            if (!ok) return;
+            const result = await App.spotApi.deleteMySpot(item);
+            if (!result.success) {
+              alert(result.message || '삭제하지 못했습니다.');
+              return;
+            }
+            App.pageMain.closeBottomSheet();
+            await App.pageMain.renderDefaultMarkers();
+            App.pageMain.refreshMypageFrame();
+          });
+        }
       }
 
       const detailButton = contentNode.querySelector('#info-link');
@@ -271,6 +341,13 @@ App.pageMain = {
         rankingWrapper.classList.remove('hide');
       }
     });
+  },
+
+  refreshMypageFrame: () => {
+    const frame = App.dom.qs('#side-mypage iframe');
+    if (frame?.contentWindow) {
+      frame.contentWindow.location.reload();
+    }
   },
 
   toggleSidebar: () => {

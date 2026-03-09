@@ -1,22 +1,24 @@
-/** 회원가입 페이지 컨트롤러. */
+/** 회원가입 페이지/모달 컨트롤러. */
 App.pageJoin = {
   /** 페이지 DOM 요소를 한 번에 수집한다. */
-  getElements: () => ({
-    form: App.dom.qs('form'),
-    loginIdInput: App.dom.qs('#input-dd-user-id'),
-    passwordInput: App.dom.qs('#input-dd-user-password1'),
-    passwordConfirmInput: App.dom.qs('#input-dd-user-password2'),
-    nicknameInput: App.dom.qs('#input-dd-user-nickname'),
-    loginIdMessage: App.dom.qs('#wo-id'),
-    passwordMessage: App.dom.qs('#wo-pw1'),
-    passwordConfirmMessage: App.dom.qs('#wo-pw2'),
-    nicknameMessage: App.dom.qs('#wo-nn'),
+  getElements: (root = document) => ({
+    root,
+    form: App.dom.qs('form', root),
+    loginIdInput: App.dom.qs('#input-dd-user-id', root),
+    passwordInput: App.dom.qs('#input-dd-user-password1', root),
+    passwordConfirmInput: App.dom.qs('#input-dd-user-password2', root),
+    nicknameInput: App.dom.qs('#input-dd-user-nickname', root),
+    loginIdMessage: App.dom.qs('#wo-id', root),
+    passwordMessage: App.dom.qs('#wo-pw1', root),
+    passwordConfirmMessage: App.dom.qs('#wo-pw2', root),
+    nicknameMessage: App.dom.qs('#wo-nn', root),
   }),
 
   /** 초기 진입점 */
-  init: () => {
-    const elements = App.pageJoin.getElements();
-    if (!elements.form) return;
+  init: (root = document) => {
+    const elements = App.pageJoin.getElements(root);
+    if (!elements.form || elements.form.dataset.bound === 'true') return;
+    elements.form.dataset.bound = 'true';
     App.pageJoin.bindValidation(elements);
     App.pageJoin.bindSubmit(elements);
   },
@@ -38,7 +40,7 @@ App.pageJoin = {
     App.dom.on(elements.form, 'submit', async (event) => {
       event.preventDefault();
       if (elements.passwordInput.value !== elements.passwordConfirmInput.value) {
-        alert('비밀번호가 일치하지 않습니다.');
+        App.uiAuth.showMessage(elements.passwordConfirmMessage, '비밀번호가 일치하지 않습니다.');
         return;
       }
 
@@ -49,7 +51,12 @@ App.pageJoin = {
       });
 
       if (!result.success) {
-        alert(result.message || '회원가입에 실패했습니다.');
+        App.uiAuth.showMessage(elements.nicknameMessage, result.message || '회원가입에 실패했습니다.');
+        return;
+      }
+
+      if (App.uiModal) {
+        App.uiModal.open('login');
         return;
       }
 
@@ -59,4 +66,4 @@ App.pageJoin = {
   },
 };
 
-document.addEventListener('DOMContentLoaded', App.pageJoin.init);
+document.addEventListener('DOMContentLoaded', () => App.pageJoin.init());

@@ -8,7 +8,7 @@
 }
 
 /* 제목 스타일 */
-h2 {
+.dd-auth-box h2 {
     text-align: left;
     color: var(--text-white);
     font-size: 1.5rem;
@@ -47,7 +47,7 @@ h2 {
 }
 
 /* 하단 링크 스타일: 색상과 굵기 강조 */
-a, a:visited {
+.dd-auth-box a, .dd-auth-box a:visited {
     display: inline-block;
     color: var(--text-white) !important;
     font-size: 0.75rem;
@@ -57,7 +57,7 @@ a, a:visited {
     transition: 0.3s;
 }
 
-a:hover {
+.dd-auth-box a:hover {
     color: var(--point-orange) !important;
 }
 .a-parent {

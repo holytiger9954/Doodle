@@ -4,7 +4,7 @@
  */
 App.categoryData = {
   categories: [
-    { key: 'favorite', label: '찜', template: 'info.html', image: './img/star.png' },
+    { key: 'all', label: '전체', template: 'info.html', image: './img/marker.png' },
     { key: 'hospital', label: '병원', template: 'info.html', image: './img/hospital.png' },
     { key: 'gym', label: '체육관', template: 'info.html', image: './img/gym.png' },
     { key: 'police', label: '경찰서', template: 'info.html', image: './img/police.png' },
@@ -15,14 +15,14 @@ App.categoryData = {
   /** 카테고리 텍스트로 메타데이터를 조회한다. */
   findCategoryMeta: (item) => {
     const categoryText = String(item?.Category || item?.category || '');
-    return App.categoryData.categories.find((category) => categoryText.includes(category.label))
+    return App.categoryData.categories.find((category) => category.key !== 'all' && categoryText.includes(category.label))
       || App.categoryData.categories[0];
   },
 
   /** UI 버튼 index를 실제 데이터 배열로 매핑한다. */
   resolveItemsByIndex: (payload) => {
     const dataSets = [
-      App.categoryData.favoriteItems,
+      App.categoryData.getAllBaseItems(),
       App.categoryData.hospitalItems,
       App.categoryData.gymItems,
       App.categoryData.policeItems,
@@ -31,6 +31,16 @@ App.categoryData = {
     ];
     return dataSets[payload.index] || [];
   },
+
+
+  /** 기본 카테고리 마커 전체를 하나의 배열로 반환한다. */
+  getAllBaseItems: () => ([
+    ...App.categoryData.hospitalItems,
+    ...App.categoryData.gymItems,
+    ...App.categoryData.policeItems,
+    ...App.categoryData.smokingItems,
+    ...App.categoryData.toiletItems,
+  ]),
 
   favoriteItems: [
     { title: "천안시청 인근", latitude: 36.815129, longitude: 127.113894, Category: '찜' },

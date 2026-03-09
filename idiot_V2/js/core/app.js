@@ -22,6 +22,8 @@ App.const = {
     NEW_MARKER: 'newMarker',
     SELECT_LOCATION: 'selectLocation',
     SELECT_CATEGORY: 'selectCategory',
+    OPEN_MODAL: 'openModal',
+    SPOTS_CHANGED: 'spotsChanged',
   },
 };
 

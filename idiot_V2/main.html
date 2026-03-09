@@ -11,6 +11,9 @@
     <link rel="stylesheet" href="./css/search.css">
     <link rel="stylesheet" href="./css/ranking.css">
     <link rel="stylesheet" href="./css/ui.css">
+    <link rel="stylesheet" href="./css/login.css">
+    <link rel="stylesheet" href="./css/join.css">
+    <link rel="stylesheet" href="./css/report.css">
     <script type="text/javascript"
         src="//dapi.kakao.com/v2/maps/sdk.js?appkey=47bbd47c04e70af1e13f9280c52c609b&autoload=false&libraries=services,clusterer"></script>
 </head>
@@ -49,6 +52,15 @@
 
     <div id="sidebar-overlay" onclick="toggleSidebar()"></div>
 
+    <!--
+      공용 오버레이 모달 레이어.
+      login / join / report / changePw 를 페이지 이동 없이 이 위에 올린다.
+    -->
+    <div id="app-modal-overlay" class="app-modal-overlay">
+        <div id="app-modal-content" class="app-modal-content"></div>
+    </div>
+
+
     <button id="savebtn" class="action-btn-save">📍 장소 등록</button>
 
     <div id="register-modal" class="dd-overlay hidden">
@@ -65,14 +77,15 @@
     <div id="map"></div>
     <div id="bottom-sheet-backdrop" class="bottom-sheet-backdrop"></div>
     <!-- 바이브코딩 -->
-    <div id="bottom-sheet" class="bottom-sheet">
-    <div class="sheet-header">
-        <button onclick="closeBottomSheet()">닫기</button>
+    <!--
+      기존 하단 바텀시트 대신 지도 위 팝업 카드처럼 보이도록 구조 단순화.
+      실제 내용은 info.html 템플릿을 #sheet-data 에 주입한다.
+    -->
+    <div id="bottom-sheet" class="bottom-sheet map-info-popup" role="dialog" aria-modal="true" aria-label="장소 정보 팝업">
+        <div class="sheet-content popup-content">
+            <div id="sheet-data"></div>
+        </div>
     </div>
-    <div class="sheet-content">
-        <div id="sheet-data"></div>
-    </div>
-</div>
 
 <script src="./js/core/app.js"></script>
 <script src="./js/core/dom.js"></script>
@@ -80,7 +93,14 @@
 <script src="./js/core/message.js"></script>
 <script src="./js/core/include.loader.js"></script>
 <script src="./js/pages/page.search.js"></script>
+<script src="./js/pages/page.login.js"></script>
+<script src="./js/pages/page.join.js"></script>
+<script src="./js/pages/page.change-password.js"></script>
+
 <script src="./js/ui/ui.category.selector.js"></script>
+<script src="./js/ui/ui.auth.js"></script>
+<script src="./js/ui/ui.report.js"></script>
+<script src="./js/ui/ui.modal.js"></script>
 <script src="./js/api/http.client.js"></script>
 <script src="./js/api/auth.api.js"></script>
 <script src="./js/api/spot.api.js"></script>

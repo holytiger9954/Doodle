@@ -2,8 +2,9 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>마이페이지</title>
     <link rel="stylesheet" href="./css/common.css">
-    <!-- <link rel="stylesheet" href="./css/main.css">  -->
     <link rel="stylesheet" href="./css/mypage.css">
 </head>
 <body id="side">
@@ -11,20 +12,33 @@
         <h1>MY PAGE</h1>
         <button class="close-panel" onclick="window.parent.toggleSidebar()">×</button>
     </div>
+
+    <section id="mypage-auth" class="mypage-auth is-guest">
+        <p id="mypage-auth-title" class="mypage-auth-title">로그인이 필요합니다</p>
+        <p id="mypage-auth-desc" class="mypage-auth-desc">로그인 후 찜 목록과 내가 등록한 장소를 확인할 수 있어요.</p>
+        <div class="mypage-auth-actions">
+            <button type="button" id="mypage-auth-primary" class="mypage-auth-btn primary">로그인 하러가기</button>
+            <button type="button" id="mypage-auth-secondary" class="mypage-auth-btn secondary">회원가입</button>
+        </div>
+    </section>
+
     <div class="category-list side">
-        <button type="button" class="side-btn" ><img src="./img/star.png"> <span>찜 목록</span></button>
-        <button type="button" class="side-btn"><img src="./img/hospital.png"> <span>병원</span></button>
-        <button type="button" class="side-btn"><img src="./img/gym.png"> <span>체육관</span></button>
-        <button type="button" class="side-btn"><img src="./img/police.png"> <span>경찰서</span></button>
-        <button type="button" class="side-btn"><img src="./img/smoking.png"> <span>흡연부스</span></button>
-        <button type="button" class="side-btn"><img src="./img/toilet.png"> <span>공중 화장실</span></button>
+        <button type="button" class="side-btn" data-panel="favorites"><img src="./img/star.png"> <span>찜 목록</span></button>
+        <button type="button" class="side-btn" data-panel="mySpots"><img src="./img/marker.png"> <span>내가 등록한 장소</span></button>
         <div id="marker" class="marker"></div>
     </div>
-    <div class="side-ad">광고 영역 (Doodle Ads)</div>
+
+    <div class="side-ad">나와 관련된 장소만 빠르게 모아보세요.</div>
+
 <script src="./js/core/app.js"></script>
 <script src="./js/core/dom.js"></script>
 <script src="./js/core/message.js"></script>
+<script src="./js/core/storage.js"></script>
+<script src="./js/api/http.client.js"></script>
+<script src="./js/api/auth.api.js"></script>
+<script src="./js/api/spot.api.js"></script>
 <script src="./js/data/category.data.js"></script>
+<script src="./js/pages/page.mypage.js"></script>
 <script src="./js/ui/ui.marker.panel.js"></script>
 </body>
 </html>

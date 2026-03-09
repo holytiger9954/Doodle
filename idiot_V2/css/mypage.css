@@ -17,25 +17,14 @@ body#side {
 }
 
 /* 2. 스크롤바 디자인 (크롬, 사파리, 엣지) */
+/* 2. 스크롤은 유지하되, 사용자에게는 스크롤바를 숨긴다. */
+body#side {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
 body#side::-webkit-scrollbar {
-    width: 6px;
-    /* 스크롤바 두께 */
-}
-
-body#side::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    /* 바닥 배경 */
-}
-
-body#side::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.2);
-    /* 스크롤바 색상 */
-    border-radius: 10px;
-}
-
-body#side::-webkit-scrollbar-thumb:hover {
-    background: var(--point-orange);
-    /* 마우스 올리면 포인트 컬러로! */
+    display: none;
 }
 
 /* 2. 헤더 영역 */
@@ -134,6 +123,16 @@ body#side::-webkit-scrollbar-thumb:hover {
     max-height: 2000px;
 }
 
+/* 목록은 스크롤 가능하지만 스크롤바는 숨김 처리 */
+#marker {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#marker::-webkit-scrollbar {
+    display: none;
+}
+
 /* 개별 리스트 박스: 일자(Row) 형태 */
 .box {
     background: white;
@@ -165,6 +164,9 @@ body#side::-webkit-scrollbar-thumb:hover {
     font-size: 15px;
     color: var(--main-blue);
     font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .box:hover p {
@@ -237,5 +239,181 @@ body#side::-webkit-scrollbar-thumb:hover {
     .side-btn {
         gap: 10px;
         border-radius: 10px;
+    }
+}
+
+
+/* 로그인 게이트 패널 */
+.mypage-auth {
+    margin: 18px 20px 0;
+    padding: 16px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(10px);
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+}
+
+.mypage-auth.need-attention {
+    transform: translateY(-2px);
+    border-color: var(--point-orange);
+    background: rgba(243, 127, 18, 0.16);
+}
+
+.mypage-auth.is-logged-in {
+    border-color: rgba(243, 127, 18, 0.35);
+}
+
+.mypage-auth-title {
+    font-size: 1rem;
+    font-weight: 800;
+    color: #fff;
+}
+
+.mypage-auth-desc {
+    margin-top: 8px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    color: rgba(255,255,255,0.82);
+}
+
+.mypage-auth-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.mypage-auth-btn {
+    flex: 1;
+    min-height: 40px;
+    border-radius: 10px;
+    border: 1px solid rgba(255,255,255,0.16);
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+}
+
+.mypage-auth-btn:hover {
+    transform: translateY(-1px);
+}
+
+.mypage-auth-btn.primary {
+    background: var(--point-orange);
+    color: #fff;
+    border-color: transparent;
+}
+
+.mypage-auth-btn.secondary {
+    background: rgba(255,255,255,0.08);
+    color: #fff;
+}
+
+.side-btn.is-disabled {
+    opacity: 0.58;
+}
+
+.side-btn.is-disabled:hover {
+    transform: none;
+    border-color: rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+}
+
+@media (max-width: 768px) {
+    .mypage-auth {
+        margin: 14px 16px 0;
+        padding: 14px;
+        border-radius: 14px;
+    }
+
+    .mypage-auth-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .mypage-auth {
+        margin: 12px 12px 0;
+        padding: 12px;
+    }
+
+    .mypage-auth-title {
+        font-size: 0.96rem;
+    }
+
+    .mypage-auth-desc {
+        font-size: 0.84rem;
+    }
+}
+
+
+.box.is-empty {
+    cursor: default;
+    background: rgba(255,255,255,0.94);
+}
+
+.box.is-empty:hover {
+    background: rgba(255,255,255,0.94);
+    transform: none;
+}
+
+.box.is-empty p {
+    color: rgba(45, 52, 54, 0.8);
+    white-space: normal;
+    line-height: 1.5;
+}
+
+
+.box--action {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+}
+
+.box-main {
+    min-width: 0;
+    flex: 1;
+}
+
+.box-sub {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: rgba(12, 27, 51, 0.65);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.box-delete {
+    flex: 0 0 auto;
+    border: none;
+    border-radius: 999px;
+    background: rgba(243, 127, 18, 0.12);
+    color: var(--point-orange);
+    font-weight: 700;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.box-delete:hover {
+    background: var(--point-orange);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.box:hover .box-sub {
+    color: rgba(255, 255, 255, 0.85);
+}
+
+@media (max-width: 768px) {
+    .box--action {
+        gap: 10px;
+    }
+
+    .box-delete {
+        padding: 7px 10px;
+        font-size: 12px;
     }
 }

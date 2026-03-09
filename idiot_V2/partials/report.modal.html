@@ -1,0 +1,18 @@
+<div class="dd-auth-box">
+  <span class="close-btn" data-modal-close>&times;</span>
+  <div id="report-section">
+    <h2>신고사유</h2>
+    <p id="report-spot-title" class="report-spot-title">선택한 장소</p>
+    <form>
+      <select name="신고사유" class="report-reason">
+        <option value="spam">스팸/영리적 홍보</option>
+        <option value="danger">위험한 장소</option>
+        <option value="different">적힌태그와 다름</option>
+        <option value="etc">기타 (직접 입력)</option>
+      </select>
+      <textarea name="detail-reason" id="detail-reason" placeholder="상세사유를 적어주세요.(최대 300자)" maxlength="300"></textarea>
+      <p class="message" id="report-message"></p>
+      <button type="submit" class="auth-submit-btn report-btn">신고</button>
+    </form>
+  </div>
+</div>
