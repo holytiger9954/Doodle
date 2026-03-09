@@ -204,6 +204,12 @@
     .toolbar, .form-grid {
       display: grid;
       gap: 10px;
+      align-items: baseline;
+    }
+
+    .search {
+      display: flex;
+      align-items: baseline;
     }
 
     .toolbar {
@@ -455,7 +461,7 @@
       <section class="panel" data-panel="tagStats">
         <h2>태그 현황</h2>
         <div class="toolbar">
-          최근 : <input id="tagDays" type="number" min="1" value="2" />
+          <div class="search"><span> &nbsp; <b>최근</b> : &nbsp;&nbsp;&nbsp;</span><input id="tagDays" type="number" min="1" value="2" style="width:50px"/>&nbsp; days</div>
           <button class="btn" id="btnReloadTagStats">새로고침</button>
         </div>
         <table>
