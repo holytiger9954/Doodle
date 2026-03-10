@@ -66,4 +66,13 @@ App.pageChangePassword = {
   },
 };
 
+function view(id) {
+  const password1 = document.getElementById(id);
+  if (password1.type === 'password' && password1.value.length > 0) {
+    password1.type = 'text';
+  } else if (password1.type === 'text' && password1.value.length > 0) {
+    password1.type = 'password';
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => App.pageChangePassword.init());
