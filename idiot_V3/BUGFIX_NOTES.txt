@@ -1,3 +1,0 @@
-수정 내용
-1) App.categoryData.getAllBaseItems 누락 복구
-2) 검색창 컨테이너 클릭 시에도 안내 오버레이가 열리도록 보강

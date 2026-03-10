@@ -1,5 +1,0 @@
-검색 결과 드롭다운이 카테고리 바 등 다른 UI 뒤로 가던 문제를 수정했습니다.
-- main-header z-index 상향 (1000 -> 1600)
-- header-search에 relative/z-index 추가
-- search-inline-root 및 search-dropdown z-index 상향
-의도: 카테고리 바(#ucon, z-index 1500)보다 검색 드롭다운이 위에 보이도록 조정

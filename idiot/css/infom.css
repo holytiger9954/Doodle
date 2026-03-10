@@ -1,0 +1,318 @@
+/* 마커 상세 바텀시트 카드 공통 스타일 */
+.info-window.dd-auth-box {
+    position: relative;
+    top: auto;
+    left: auto;
+    width: 100%;
+    max-width: 440px;
+    display: flex;
+    flex-direction: column;
+    max-height: min(72vh, 680px);
+    margin: 0 auto;
+    padding: 0;
+    z-index: 1;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+    background: #ffffff;
+}
+
+.info-header {
+    position: relative;
+    width: 100%;
+    height: 220px;
+}
+
+.info-header img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.info-header .close-btn {
+    float: none;
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    color: white;
+    text-shadow: 0 0 5px rgba(0,0,0,0.5);
+    z-index: 10;
+    background: rgba(0,0,0,0.32);
+    border: none;
+    border-radius: 999px;
+    width: 36px;
+    height: 36px;
+}
+
+#info-title {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    padding: 28px 16px 12px;
+    background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+    color: white;
+    font-size: 1rem;
+    pointer-events: none;
+}
+
+.info-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    padding: 16px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overflow-wrap: anywhere;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.info-body::-webkit-scrollbar {
+    display: none;
+}
+
+.info-category {
+    display: inline-flex;
+    align-items: center;
+    min-height: 32px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    background: rgba(243, 127, 18, 0.12);
+    color: var(--point-orange);
+    font-weight: 700;
+    margin-bottom: 12px;
+}
+
+.mg {
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--soft-black);
+}
+
+.info-footer {
+    position: sticky;
+    bottom: 0;
+    flex-shrink: 0;
+    display: flex;
+    gap: 10px;
+    padding: 12px 16px 16px;
+    background: #ffffff;
+    border-top: 1px solid rgba(27, 43, 72, 0.08);
+    box-shadow: 0 -8px 20px rgba(20, 31, 56, 0.08);
+    z-index: 2;
+}
+
+.info-footer .auth-submit-btn {
+    flex: 1;
+    margin: 0;
+    min-height: 44px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#report {
+    background-color: var(--point-orange) !important;
+    color: white;
+}
+
+#info-link {
+    background-color: var(--main-blue) !important;
+    color: white;
+}
+
+@media (max-width: 768px) {
+    .info-window.dd-auth-box {
+        max-width: 100%;
+        border-radius: 18px;
+    }
+
+    .info-header {
+        height: 190px;
+    }
+
+    #info-title {
+        padding: 24px 14px 10px;
+        font-size: 0.95rem;
+    }
+
+    .info-body {
+        padding: 14px;
+    }
+
+    .mg {
+        font-size: 0.9rem;
+    }
+
+    .info-footer {
+        padding: 0 14px 14px;
+        gap: 8px;
+    }
+}
+
+@media (max-width: 480px) {
+    .info-header {
+        height: 160px;
+    }
+
+    .info-header .close-btn {
+        width: 32px;
+        height: 32px;
+        top: 10px;
+        right: 10px;
+    }
+
+    .info-category {
+        min-height: 28px;
+        padding: 5px 10px;
+        font-size: 0.84rem;
+    }
+
+    .mg {
+        font-size: 0.84rem;
+    }
+
+    .info-footer {
+        flex-direction: column;
+    }
+}
+
+
+.info-owner.hidden {
+    display: none;
+}
+
+#favorite-toggle {
+    background-color: #f5f5f5 !important;
+    color: var(--soft-black);
+    border: 1px solid rgba(0,0,0,0.08);
+}
+
+#favorite-toggle.is-favorite {
+    background-color: rgba(243, 127, 18, 0.14) !important;
+    color: var(--point-orange);
+    border-color: rgba(243, 127, 18, 0.35);
+}
+
+
+#delete-spot {
+    background-color: #fff3ed !important;
+    color: var(--point-orange);
+    border: 1px solid rgba(243,127,18,0.28);
+}
+
+.hidden {
+    display: none !important;
+}
+
+.info-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.info-tags.hidden {
+    display: none !important;
+}
+
+.info-tag-chip {
+    border: none;
+    border-radius: 999px;
+    padding: 6px 10px;
+    background: rgba(3, 196, 240, 0.12);
+    color: var(--main-blue);
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.info-tag-chip:hover {
+    background: rgba(3, 196, 240, 0.18);
+}
+
+
+.info-details {
+    display: none;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(27, 43, 72, 0.08);
+}
+
+.info-details.active {
+    display: block;
+}
+
+.info-detail-row {
+    display: grid;
+    grid-template-columns: 76px 1fr;
+    gap: 10px;
+    align-items: start;
+    padding: 7px 0;
+    color: var(--soft-black);
+    font-size: 0.92rem;
+    line-height: 1.5;
+}
+
+.info-detail-label {
+    color: rgba(36, 45, 60, 0.64);
+    font-weight: 700;
+}
+
+.info-detail-row-tags span:last-child {
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 480px) {
+    .info-detail-row {
+        grid-template-columns: 64px 1fr;
+        gap: 8px;
+        font-size: 0.84rem;
+    }
+}
+
+
+.info-window.dd-auth-box {
+    background: #ffffff;
+}
+
+.info-body,
+.info-footer {
+    background: #ffffff;
+}
+
+#info-title {
+    font-size: 1.08rem;
+    font-weight: 800;
+}
+
+#info-address {
+    color: #3b4a62;
+}
+
+#info-desc {
+    color: var(--soft-black);
+    font-weight: 500;
+}
+
+.info-details {
+    background: #f7f9fc;
+    border-radius: 12px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+
+.info-details[hidden] {
+    display: none !important;
+}
+
+.info-details.active {
+    display: block;
+}
+
+#info-link[aria-expanded="true"] {
+    background-color: #29456f !important;
+}
