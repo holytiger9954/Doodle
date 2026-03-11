@@ -77,6 +77,8 @@ App.spotApi = {
       ownerId: spot.ownerId || spot.user || savedUser.loginId || '',
       ownerNickname: spot.ownerNickname || savedUser.nickname || '게스트',
       createdAt: spot.createdAt || new Date().toISOString(),
+      isHidden: spot.isHidden === true,
+      hiddenAt: spot.hiddenAt || null,
     };
 
     spots.push(normalizedSpot);
@@ -94,7 +96,7 @@ App.spotApi = {
     const loginId = App.storage.getCurrentLoginId();
     const spots = await App.spotApi.listUserSpots();
     if (!loginId) return [];
-    return spots.filter((spot) => App.spotApi.getSpotOwnerId(spot) === loginId);
+    return spots.filter((spot) => App.spotApi.getSpotOwnerId(spot) === loginId && !App.spotApi.isHiddenSpot(spot));
   },
 
   /** 찜 목록 조회: 로그인 사용자 기준으로만 분리 */
@@ -193,6 +195,10 @@ App.spotApi = {
     });
     App.storage.setJson(App.storage.keys.favoriteSpotsByUser, favoriteMap);
 
+    if (App.commentApi?.removeCommentsBySpot) {
+      App.commentApi.removeCommentsBySpot(targetId);
+    }
+
     return { success: true, message: '삭제되었습니다.', removedSpot: targetSpot, removedSpotId: targetId };
   },
 
@@ -264,6 +270,8 @@ App.spotApi = {
       ownerNickname: originalSpot.ownerNickname || App.storage.getSavedUser()?.nickname || '게스트',
       createdAt: originalSpot.createdAt,
       updatedAt: new Date().toISOString(),
+      isHidden: originalSpot.isHidden === true,
+      hiddenAt: originalSpot.hiddenAt || null,
     };
 
     spots[targetIndex] = updatedSpot;
@@ -327,6 +335,9 @@ App.spotApi = {
    */
   isPrivateSpot: (spot = {}) => spot.private === true || spot.isPrivate === true,
 
+  /** 운영 숨김 여부 */
+  isHiddenSpot: (spot = {}) => spot.isHidden === true,
+
   /**
    * 현재 로그인 사용자가 이 스팟을 볼 수 있는지 판단한다.
    *
@@ -338,6 +349,7 @@ App.spotApi = {
    * 이 함수가 현재 프로젝트의 공개/비공개 "핵심 정책"이다.
    */
   canViewSpot: (spot = {}) => {
+    if (App.spotApi.isHiddenSpot(spot)) return false;
     if (!App.spotApi.isPrivateSpot(spot)) return true;
 
     const loginId = App.storage.getCurrentLoginId();
@@ -365,8 +377,11 @@ App.spotApi = {
    */
   listPublicUserSpots: async () => {
     const spots = await App.spotApi.listUserSpots();
-    return spots.filter((spot) => !App.spotApi.isPrivateSpot(spot));
+    return spots.filter((spot) => !App.spotApi.isPrivateSpot(spot) && !App.spotApi.isHiddenSpot(spot));
   },
+
+  /** 관리자용 전체 사용자 스팟 목록(raw). */
+  listAdminUserSpots: async () => App.spotApi.listUserSpots(),
 
   /**
    * 지도 기본 화면에 보여줄 전체 마커 집합.
@@ -390,6 +405,84 @@ App.spotApi = {
     const baseItems = App.categoryData.getAllBaseItems();
     const userSpots = await App.spotApi.listPublicUserSpots();
     return App.spotApi.dedupeSpots([...baseItems, ...userSpots]);
+  },
+
+
+  /**
+   * 기본 데이터 + 사용자 등록 데이터를 합친 전체 스팟 목록.
+   *
+   * 마이페이지의 내 댓글처럼 특정 장소 원본을 다시 찾을 때 사용한다.
+   */
+  listAllSpots: async () => {
+    const baseItems = App.categoryData.getAllBaseItems();
+    const userSpots = await App.spotApi.listUserSpots();
+    return App.spotApi.dedupeSpots([...baseItems, ...userSpots]);
+  },
+
+  /**
+   * stable id 또는 기존 identity로 스팟 1건을 찾는다.
+   */
+  findSpotByStableId: async (spotId = '') => {
+    const targetId = String(spotId || '').trim();
+    if (!targetId) return null;
+
+    const allSpots = await App.spotApi.listAllSpots();
+    const foundSpot = allSpots.find((spot) => (
+      App.spotApi.getSpotStableId(spot) === targetId
+      || App.spotApi.getSpotIdentity(spot) === targetId
+    )) || null;
+
+    if (!foundSpot) return null;
+    const isUserSpot = Boolean(foundSpot.ownerId || foundSpot.user || foundSpot.private === true || foundSpot.isPrivate === true || foundSpot.isHidden === true);
+    if (isUserSpot && !App.spotApi.canViewSpot(foundSpot)) return null;
+    return foundSpot;
+  },
+
+  /** 관리자 숨김 처리 */
+  hideSpotByAdmin: async (spotOrId = '') => {
+    const targetId = typeof spotOrId === 'string' ? String(spotOrId || '').trim() : App.spotApi.getSpotStableId(spotOrId);
+    if (!targetId) return { success: false, message: '대상을 찾지 못했습니다.' };
+    const spots = await App.spotApi.listUserSpots();
+    const index = spots.findIndex((spot) => App.spotApi.getSpotStableId(spot) === targetId || App.spotApi.getSpotIdentity(spot) === targetId);
+    if (index === -1) return { success: false, message: '대상을 찾지 못했습니다.' };
+    spots[index] = { ...spots[index], isHidden: true, hiddenAt: new Date().toISOString() };
+    App.storage.setJson(App.storage.keys.userSpots, spots);
+    return { success: true, message: '장소를 숨김 처리했습니다.', data: spots[index] };
+  },
+
+  /** 관리자 숨김 해제 */
+  unhideSpotByAdmin: async (spotOrId = '') => {
+    const targetId = typeof spotOrId === 'string' ? String(spotOrId || '').trim() : App.spotApi.getSpotStableId(spotOrId);
+    if (!targetId) return { success: false, message: '대상을 찾지 못했습니다.' };
+    const spots = await App.spotApi.listUserSpots();
+    const index = spots.findIndex((spot) => App.spotApi.getSpotStableId(spot) === targetId || App.spotApi.getSpotIdentity(spot) === targetId);
+    if (index === -1) return { success: false, message: '대상을 찾지 못했습니다.' };
+    spots[index] = { ...spots[index], isHidden: false, hiddenAt: null };
+    App.storage.setJson(App.storage.keys.userSpots, spots);
+    return { success: true, message: '장소 숨김을 해제했습니다.', data: spots[index] };
+  },
+
+  /** 관리자 삭제 */
+  deleteSpotByAdmin: async (spotOrId = '') => {
+    const targetId = typeof spotOrId === 'string' ? String(spotOrId || '').trim() : App.spotApi.getSpotStableId(spotOrId);
+    if (!targetId) return { success: false, message: '대상을 찾지 못했습니다.' };
+
+    const spots = App.storage.getJson(App.storage.keys.userSpots, []);
+    const targetSpot = spots.find((spot) => App.spotApi.getSpotStableId(spot) === targetId || App.spotApi.getSpotIdentity(spot) === targetId);
+    if (!targetSpot) return { success: false, message: '삭제할 장소를 찾지 못했습니다.' };
+
+    App.storage.setJson(App.storage.keys.userSpots, spots.filter((spot) => App.spotApi.getSpotStableId(spot) !== targetId && App.spotApi.getSpotIdentity(spot) !== targetId));
+
+    const favoriteMap = App.storage.getJson(App.storage.keys.favoriteSpotsByUser, {});
+    Object.keys(favoriteMap).forEach((userId) => {
+      favoriteMap[userId] = (favoriteMap[userId] || []).filter((spot) => App.spotApi.getSpotStableId(spot) !== targetId && App.spotApi.getSpotIdentity(spot) !== targetId);
+    });
+    App.storage.setJson(App.storage.keys.favoriteSpotsByUser, favoriteMap);
+
+    if (App.commentApi?.removeCommentsBySpot) App.commentApi.removeCommentsBySpot(targetId);
+    if (App.reportApi?.removeReportsBySpot) App.reportApi.removeReportsBySpot(targetId);
+
+    return { success: true, message: '장소를 삭제했습니다.', removedSpotId: targetId, removedSpot: targetSpot };
   },
 
   /**

@@ -72,8 +72,15 @@ App.uiModal = {
 
     if (modalName === 'report' && options.item) {
       const title = App.dom.qs('#report-spot-title', modalBox);
+      const form = App.dom.qs('form', modalBox);
       if (title) {
         title.textContent = options.item.title || options.item.address || '선택한 장소';
+      }
+      if (form) {
+        form.dataset.targetType = options.targetType || 'spot';
+        form.dataset.targetId = App.spotApi?.getSpotStableId?.(options.item) || '';
+        form.dataset.spotId = App.spotApi?.getSpotStableId?.(options.item) || '';
+        form.dataset.targetTitle = options.item.title || options.item.address || '선택한 장소';
       }
     }
 

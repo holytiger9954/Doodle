@@ -1,26 +1,51 @@
 /*
   include 구조에서 main body 스타일이 깨지지 않도록 body 선택자를 제거하고
-  카테고리 바 전용 wrapper(.ui-inline-root / .ui-page-root)에만 스타일을 적용한다.
+  카테고리 바 전용 wrapper(.ui-inline-wrap / .ui-inline-scroller / .ui-inline-root)에만 스타일을 적용한다.
 */
+.ui-inline-wrap,
+.ui-page-wrap {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+}
+
+.ui-inline-scroller,
+.ui-page-scroller {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+    touch-action: pan-x;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.ui-inline-scroller::-webkit-scrollbar,
+.ui-page-scroller::-webkit-scrollbar {
+    display: none;
+}
+
 .ui-inline-root,
 .ui-page-root {
     background-color: transparent !important;
     display: flex;
     flex-direction: row;
     align-items: center;
+    justify-content: center;
     gap: 10px;
-    overflow-x: auto;
-    overflow-y: hidden;
     white-space: nowrap;
+    width: max-content;
     min-width: 100%;
-    padding: 6px 8px;
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+    padding: 6px 16px;
+    margin: 0 auto;
 }
 
-.ui-inline-root::-webkit-scrollbar,
-.ui-page-root::-webkit-scrollbar {
-    display: none;
+.ui-inline-scroller.is-dragging,
+.ui-page-scroller.is-dragging {
+    cursor: grabbing;
 }
 
 .ui {
@@ -33,13 +58,16 @@
     min-height: 38px;
     padding: 8px 12px;
     border-radius: 999px;
-    background: var(--point-orange);
+    background: rgba(243, 127, 18, 0.92);
     color: #fff;
+    box-shadow: 0 10px 18px rgba(8, 17, 30, 0.16);
+    transition: transform 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
 }
-
 
 .ui:hover {
     cursor: pointer;
+    transform: translateY(-1px);
+    box-shadow: 0 14px 22px rgba(8, 17, 30, 0.2);
 }
 
 .ui.is-active {
@@ -58,11 +86,11 @@
     filter: saturate(1.1);
 }
 
-
 .ui img {
     width: 20px;
     height: 20px;
-    object-fit: cover;
+    object-fit: contain;
+    display: block;
 }
 
 .ui span {
@@ -70,20 +98,11 @@
     color: #fff;
 }
 
-
-
-/*
-  PC 브라우저에서는 카테고리 바가 화면 중앙에 오도록 정렬한다.
-  모바일/태블릿에서는 기존처럼 가로 스크롤이 가능한 구조를 유지한다.
-*/
 @media (min-width: 769px) {
     .ui-inline-root,
     .ui-page-root {
         justify-content: center;
-        width: fit-content;
-        min-width: 0;
-        max-width: 100%;
-        margin: 0 auto;
+        min-width: 100%;
     }
 }
 
@@ -91,7 +110,7 @@
     .ui-inline-root,
     .ui-page-root {
         gap: 8px;
-        padding: 4px 6px;
+        padding: 4px 12px;
     }
 
     .ui {

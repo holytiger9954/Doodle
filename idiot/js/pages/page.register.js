@@ -58,7 +58,7 @@ App.pageRegister = {
     // [v24 수정 기능]
     // 수정 모드에서는 기존 값으로 폼을 채우고,
     // 위치(identity의 일부)는 변경하지 않도록 좌표 입력을 잠근다.
-    elements.categorySelect.value = targetSpot.Category || targetSpot.category || '나만의 스팟';
+    elements.categorySelect.value = targetSpot.Category || targetSpot.category || '공유 스팟';
     elements.latitudeInput.value = String(targetSpot.latitude ?? '');
     elements.longitudeInput.value = String(targetSpot.longitude ?? '');
     elements.latitudeInput.readOnly = true;

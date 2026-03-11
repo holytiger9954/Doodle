@@ -5,6 +5,7 @@ App.uiReport = {
     const detailReason = App.dom.qs('#detail-reason', root);
     const form = App.dom.qs('form', root);
     const message = App.dom.qs('#report-message', root);
+    const reasonSelect = App.dom.qs('.report-reason', root);
 
     if (detailReason && !detailReason.dataset.bound) {
       detailReason.dataset.bound = 'true';
@@ -24,6 +25,7 @@ App.uiReport = {
         event.preventDefault();
 
         const detailText = String(detailReason?.value || '').trim();
+        const reasonValue = String(reasonSelect?.value || '').trim();
         if (!detailText) {
           App.toast.show('상세사유를 입력해주세요.');
           detailReason?.focus();
@@ -39,10 +41,24 @@ App.uiReport = {
         });
         if (!ok) return;
 
-        if (message) {
-          message.textContent = '신고가 접수되었습니다.';
+        const result = App.reportApi?.createReport?.({
+          targetType: form.dataset.targetType || 'spot',
+          targetId: form.dataset.targetId || '',
+          spotId: form.dataset.spotId || form.dataset.targetId || '',
+          targetTitle: form.dataset.targetTitle || '',
+          reason: reasonValue,
+          detail: detailText,
+        }) || { success: true, message: '신고가 접수되었습니다.' };
+
+        if (!result.success) {
+          App.toast.show(result.message || '신고를 접수하지 못했습니다.');
+          return;
         }
-        App.toast.show('신고가 접수되었습니다.');
+
+        if (message) {
+          message.textContent = result.message || '신고가 접수되었습니다.';
+        }
+        App.toast.show(result.message || '신고가 접수되었습니다.');
         setTimeout(() => {
           if (App.uiModal) {
             App.uiModal.close();

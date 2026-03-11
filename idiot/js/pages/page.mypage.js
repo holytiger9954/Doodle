@@ -9,6 +9,7 @@ App.pageMypage = {
     authDesc: App.dom.qs('#mypage-auth-desc'),
     authPrimaryButton: App.dom.qs('#mypage-auth-primary'),
     authSecondaryButton: App.dom.qs('#mypage-auth-secondary'),
+    authAdminButton: App.dom.qs('#mypage-auth-admin'),
     categoryButtons: App.dom.qsa('.side-btn'),
     markerContainer: App.dom.qs('#marker'),
   }),
@@ -33,9 +34,11 @@ App.pageMypage = {
       button.setAttribute('aria-disabled', String(!isLoggedIn));
     });
 
+    const adminButton = elements.authAdminButton;
+
     if (!isLoggedIn) {
       App.dom.setText(elements.authTitle, '로그인이 필요합니다');
-      App.dom.setText(elements.authDesc, '로그인 후 찜 목록과 내가 등록한 장소를 확인할 수 있어요.');
+      App.dom.setText(elements.authDesc, '로그인 후 찜 목록, 내가 등록한 장소, 내가 남긴 댓글을 확인할 수 있어요.');
       App.dom.setText(elements.authPrimaryButton, '로그인 하러가기');
       App.dom.setText(elements.authSecondaryButton, '회원가입');
       elements.authPrimaryButton.onclick = () => {
@@ -44,6 +47,10 @@ App.pageMypage = {
       elements.authSecondaryButton.onclick = () => {
         window.parent.postMessage({ type: App.const.messageType.OPEN_MODAL, modal: 'join' }, '*');
       };
+      if (adminButton) {
+        adminButton.classList.add('hidden');
+        adminButton.onclick = null;
+      }
 
       if (elements.markerContainer) {
         elements.markerContainer.classList.remove('show');
@@ -57,7 +64,7 @@ App.pageMypage = {
     }
 
     App.dom.setText(elements.authTitle, `${nickname || '회원'}님 환영합니다`);
-    App.dom.setText(elements.authDesc, '찜한 장소와 내가 등록한 장소만 따로 모아볼 수 있어요.');
+    App.dom.setText(elements.authDesc, '찜한 장소, 내가 등록한 장소, 내가 남긴 댓글을 한 번에 관리할 수 있어요.');
     App.dom.setText(elements.authPrimaryButton, '로그아웃');
     App.dom.setText(elements.authSecondaryButton, '비밀번호 변경');
     elements.authPrimaryButton.onclick = async () => {
@@ -83,6 +90,13 @@ App.pageMypage = {
     elements.authSecondaryButton.onclick = () => {
       window.parent.postMessage({ type: App.const.messageType.OPEN_MODAL, modal: 'changePassword' }, '*');
     };
+
+    if (adminButton) {
+      adminButton.classList.remove('hidden');
+      adminButton.onclick = () => {
+        window.open('./admin.html', '_blank', 'noopener');
+      };
+    }
   },
 
   bindLockedButtons: (elements) => {

@@ -29,6 +29,8 @@ App.storage = {
     // 기능 데이터
     userSpots: 'userSpots',
     favoriteSpotsByUser: 'favoriteSpotsByUser',
+    spotComments: 'spotComments',
+    spotReports: 'spotReports',
   },
 
   /**

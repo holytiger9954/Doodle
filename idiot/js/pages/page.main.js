@@ -266,13 +266,6 @@ App.pageMain = {
 
     // 3) 카테고리 선택 중이면 같은 카테고리를 다시 렌더링한다.
     if (typeof App.state.activeCategoryIndex === 'number' && App.state.activeCategoryIndex >= 0) {
-      if (App.state.activeCategoryIndex === 6 && !App.storage.isLoggedIn()) {
-        // '나만의 스팟' 상태에서 로그아웃한 경우는 기본 화면으로 안전하게 복귀한다.
-        await App.pageMain.renderDefaultMarkers();
-        await App.pageRanking?.render?.();
-        return;
-      }
-
       await App.pageMain.handleCategorySelect(App.state.activeCategoryIndex, { keepActive: true });
       return;
     }
@@ -364,22 +357,26 @@ App.pageMain = {
 
     let items = [];
     if (index === 6) {
-      if (!App.storage.isLoggedIn()) {
-        if (!keepActive) {
-          App.uiCategorySelector?.clearActive?.();
-        }
-        App.uiModal?.open('login');
-        App.pageMain.showToast('로그인 후 나만의 스팟을 볼 수 있어요.');
-        return;
+      items = await App.spotApi.listPublicUserSpots();
+      if (!items.length) {
+        App.pageMain.showToast('아직 등록된 공유 스팟이 없어요.');
       }
-      items = await App.spotApi.listMySpots();
     } else {
-      items = App.categoryData.resolveItemsByIndex({ index });
+      const baseItems = App.categoryData.resolveItemsByIndex({ index });
+      const visibleUserSpots = await App.spotApi.listVisibleUserSpots();
+      const selectedCategory = App.categoryData.categories[index]?.label || '';
+      const userItems = index === 0
+        ? visibleUserSpots
+        : visibleUserSpots.filter((spot) => App.categoryData.normalizeCategoryLabel(spot.Category || spot.category || '') === selectedCategory);
+      items = App.spotApi.dedupeSpots([...(baseItems || []), ...userItems]);
     }
 
     App.state.activeCategoryIndex = index;
     App.pageMain.closeBottomSheet();
     App.pageMain.renderMarkers(items, { source: 'category' });
+    if (!keepActive) {
+      App.uiCategorySelector?.setActive?.(index);
+    }
   },
 
   clearSearchState: async () => {
@@ -399,7 +396,18 @@ App.pageMain = {
 
     const createdMarkers = items.map((item) => {
       const position = new kakao.maps.LatLng(item.latitude, item.longitude);
-      const marker = new kakao.maps.Marker({ position, map: App.state.map });
+      const categoryMeta = App.categoryData.findCategoryMeta(item);
+      const markerOptions = { position, map: App.state.map };
+
+      if (categoryMeta?.markerImage) {
+        markerOptions.image = new kakao.maps.MarkerImage(
+          categoryMeta.markerImage,
+          new kakao.maps.Size(36, 48),
+          { offset: new kakao.maps.Point(18, 44) },
+        );
+      }
+
+      const marker = new kakao.maps.Marker(markerOptions);
       kakao.maps.event.addListener(marker, 'click', () => {
         App.pageMain.openInfoSheet(item);
       });
@@ -485,7 +493,10 @@ App.pageMain = {
       const visibleTitle = String(item.title || '').trim() || `${item.Category || categoryMeta.label || '장소'} 정보`;
 
       if (title) title.textContent = visibleTitle;
-      if (category) category.textContent = item.Category || item.category || categoryMeta.label || '카테고리 정보 없음';
+      if (category) {
+        const rawCategory = item.Category || item.category || categoryMeta.label || '카테고리 정보 없음';
+        category.textContent = (rawCategory === '나만의 스팟' || rawCategory === '모두의 스팟') ? '공유 스팟' : rawCategory;
+      }
       if (address) address.textContent = safeAddress ? `📍 ${safeAddress}` : '📍 주소 정보가 없습니다.';
       if (description) {
         const fallbackDescription = descriptionText || `카테고리 : ${item.Category || categoryMeta.label || '미분류'}`;
@@ -526,6 +537,154 @@ App.pageMain = {
         } else {
           tagsBox.classList.add('hidden');
         }
+      }
+
+      const commentsSection = contentNode.querySelector('#info-comments');
+      const commentsCount = contentNode.querySelector('#info-comments-count');
+      const commentsHelp = contentNode.querySelector('#info-comments-help');
+      const commentsList = contentNode.querySelector('#info-comments-list');
+      const commentForm = contentNode.querySelector('#info-comment-form');
+      const commentInput = contentNode.querySelector('#info-comment-input');
+      const commentCharCount = contentNode.querySelector('#info-comment-char-count');
+      const isCommentableSpot = App.commentApi?.isCommentableSpot?.(item) !== false;
+
+      const updateCommentCharCount = () => {
+        if (!commentInput || !commentCharCount) return;
+        const currentLength = String(commentInput.value || '').length;
+        commentCharCount.textContent = `${currentLength} / 200`;
+      };
+
+      const renderComments = () => {
+        if (!commentsSection || !commentsList || !commentsCount) return;
+
+        commentsList.innerHTML = '';
+
+        if (!isCommentableSpot) {
+          commentsCount.textContent = '0';
+          const emptyNode = document.createElement('p');
+          emptyNode.className = 'info-comment-empty';
+          emptyNode.textContent = '비공개 장소에는 댓글이 표시되지 않아요.';
+          commentsList.appendChild(emptyNode);
+          return;
+        }
+
+        const comments = App.commentApi?.listCommentsBySpot?.(item) || [];
+        commentsCount.textContent = String(comments.length);
+
+        if (!comments.length) {
+          const emptyNode = document.createElement('p');
+          emptyNode.className = 'info-comment-empty';
+          emptyNode.textContent = isCommentableSpot
+            ? '첫 댓글을 남겨보세요. 이 장소에 대한 후기나 팁을 짧게 적어도 좋아요.'
+            : '비공개 장소에는 댓글이 표시되지 않아요.';
+          commentsList.appendChild(emptyNode);
+          return;
+        }
+
+        const currentLoginId = App.storage.getCurrentLoginId();
+        comments.forEach((comment) => {
+          const commentItem = document.createElement('article');
+          commentItem.className = 'info-comment-item';
+
+          const meta = document.createElement('div');
+          meta.className = 'info-comment-meta';
+
+          const author = document.createElement('strong');
+          author.className = 'info-comment-author';
+          author.textContent = comment.authorNickname || '사용자';
+
+          const date = document.createElement('span');
+          date.className = 'info-comment-date';
+          date.textContent = App.commentApi?.formatCommentDate?.(comment.createdAt) || '';
+
+          meta.appendChild(author);
+          meta.appendChild(date);
+          commentItem.appendChild(meta);
+
+          const body = document.createElement('p');
+          body.className = 'info-comment-body';
+          body.textContent = comment.content || '';
+          commentItem.appendChild(body);
+
+          if (currentLoginId && String(comment.authorId || '') === currentLoginId) {
+            const deleteCommentButton = document.createElement('button');
+            deleteCommentButton.type = 'button';
+            deleteCommentButton.className = 'info-comment-delete';
+            deleteCommentButton.textContent = '내 댓글 삭제';
+            deleteCommentButton.addEventListener('click', async () => {
+              const ok = await App.confirm.open({
+                title: '댓글을 삭제할까요?',
+                message: '삭제 후 되돌릴 수 없어요.',
+                confirmText: '삭제',
+                cancelText: '취소',
+                danger: true,
+              });
+              if (!ok) return;
+
+              const result = App.commentApi.deleteMyComment(comment.id);
+              if (!result.success) {
+                App.toast.show(result.message || '댓글을 삭제하지 못했어요.');
+                return;
+              }
+
+              renderComments();
+              App.toast.show(result.message || '댓글을 삭제했어요.');
+            });
+            commentItem.appendChild(deleteCommentButton);
+          }
+
+          commentsList.appendChild(commentItem);
+        });
+      };
+
+      if (commentsSection && commentsHelp && commentForm && commentInput) {
+        if (!isCommentableSpot) {
+          commentsHelp.textContent = '비공개 장소에는 댓글을 남길 수 없어요.';
+          commentInput.value = '';
+          commentInput.disabled = true;
+          commentForm.classList.add('is-disabled');
+          const submitButton = commentForm.querySelector('.info-comment-submit');
+          if (submitButton) submitButton.disabled = true;
+        } else if (!App.storage.isLoggedIn()) {
+          commentsHelp.textContent = '로그인 후 댓글을 남길 수 있어요.';
+          commentInput.disabled = true;
+          commentForm.classList.add('is-disabled');
+          const submitButton = commentForm.querySelector('.info-comment-submit');
+          if (submitButton) submitButton.disabled = true;
+
+          const loginHint = document.createElement('p');
+          loginHint.className = 'info-comment-login-hint';
+          loginHint.textContent = '댓글 작성은 로그인한 사용자만 사용할 수 있어요.';
+          commentForm.appendChild(loginHint);
+        } else {
+          commentsHelp.textContent = '공개된 장소에 짧은 후기나 팁을 남길 수 있어요.';
+          commentInput.disabled = false;
+          commentForm.classList.remove('is-disabled');
+          const submitButton = commentForm.querySelector('.info-comment-submit');
+          if (submitButton) submitButton.disabled = false;
+
+          commentInput.addEventListener('input', updateCommentCharCount);
+          commentForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const result = App.commentApi.createComment({
+              spot: item,
+              content: commentInput.value,
+            });
+
+            if (!result.success) {
+              App.toast.show(result.message || '댓글을 등록하지 못했어요.');
+              return;
+            }
+
+            commentInput.value = '';
+            updateCommentCharCount();
+            renderComments();
+            App.toast.show(result.message || '댓글이 등록되었어요.');
+          });
+        }
+
+        updateCommentCharCount();
+        renderComments();
       }
 
       const closeButton = contentNode.querySelector('.close-btn');
@@ -616,7 +775,10 @@ App.pageMain = {
       const detailCreated = contentNode.querySelector('#detail-created');
       const detailTags = contentNode.querySelector('#detail-tags');
 
-      if (detailCategory) detailCategory.textContent = item.Category || item.category || categoryMeta.label || '-';
+      if (detailCategory) {
+        const rawCategory = item.Category || item.category || categoryMeta.label || '-';
+        detailCategory.textContent = (rawCategory === '나만의 스팟' || rawCategory === '모두의 스팟') ? '공유 스팟' : rawCategory;
+      }
       if (detailAddress) detailAddress.textContent = safeAddress || '주소 정보가 없습니다.';
       if (detailVisibility) {
         const isPrivate = App.spotApi.isPrivateSpot(item);

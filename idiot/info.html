@@ -1,6 +1,6 @@
 <div class="info-window dd-auth-box">
     <div class="info-header">
-        <img id="info-image" src="./img/marker.png" alt="장소 이미지">
+        <img id="info-image" src="./img/icons/all.svg" alt="장소 이미지">
         <strong id="info-title">장소 이름</strong>
         <button type="button" class="close-btn" onclick="closeOverlay()">×</button>
     </div>
@@ -19,6 +19,22 @@
             <div class="info-detail-row"><span class="info-detail-label">좌표</span><span id="detail-coords">-</span></div>
             <div class="info-detail-row info-detail-row-tags"><span class="info-detail-label">해시태그</span><span id="detail-tags">-</span></div>
         </div>
+        <section class="info-comments" id="info-comments">
+            <div class="info-comments-head">
+                <strong class="info-comments-title">댓글</strong>
+                <span class="info-comments-count" id="info-comments-count">0</span>
+            </div>
+            <p class="info-comments-help" id="info-comments-help">공개된 장소에만 댓글을 남길 수 있어요.</p>
+            <div class="info-comments-list" id="info-comments-list"></div>
+            <form class="info-comment-form" id="info-comment-form">
+                <label class="info-comment-label" for="info-comment-input">댓글 작성</label>
+                <textarea id="info-comment-input" class="info-comment-input" maxlength="200" placeholder="이 장소에 대한 짧은 후기나 팁을 남겨보세요."></textarea>
+                <div class="info-comment-form-foot">
+                    <span class="info-comment-count" id="info-comment-char-count">0 / 200</span>
+                    <button type="submit" class="info-comment-submit">등록</button>
+                </div>
+            </form>
+        </section>
     </div>
     <div class="info-footer">
         <button class="btn-detail auth-submit-btn" id="info-link" type="button">추가정보</button>

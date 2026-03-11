@@ -9,13 +9,13 @@
  */
 (function () {
   const categories = [
-    { key: 'all', label: '전체', template: 'info.html', image: './img/marker.png' },
-    { key: 'hospital', label: '병원', template: 'info.html', image: './img/hospital.png' },
-    { key: 'gym', label: '체육관', template: 'info.html', image: './img/gym.png' },
-    { key: 'police', label: '경찰서', template: 'info.html', image: './img/police.png' },
-    { key: 'smoking', label: '흡연부스', template: 'info.html', image: './img/smoking.png' },
-    { key: 'toilet', label: '공중 화장실', template: 'info.html', image: './img/toilet.png' },
-    { key: 'mySpots', label: '나만의 스팟', template: 'info.html', image: './img/marker.png' },
+    { key: 'all', label: '전체', template: 'info.html', image: './img/icons/all.svg', markerImage: './img/markers/all.svg' },
+    { key: 'hospital', label: '병원', template: 'info.html', image: './img/icons/hospital.svg', markerImage: './img/markers/hospital.svg' },
+    { key: 'gym', label: '체육관', template: 'info.html', image: './img/icons/gym.svg', markerImage: './img/markers/gym.svg' },
+    { key: 'police', label: '경찰서', template: 'info.html', image: './img/icons/police.svg', markerImage: './img/markers/police.svg' },
+    { key: 'smoking', label: '흡연부스', template: 'info.html', image: './img/icons/smoking.svg', markerImage: './img/markers/smoking.svg' },
+    { key: 'toilet', label: '공중 화장실', template: 'info.html', image: './img/icons/toilet.svg', markerImage: './img/markers/toilet.svg' },
+    { key: 'mySpots', label: '공유 스팟', template: 'info.html', image: './img/icons/shared.svg', markerImage: './img/markers/shared.svg' },
   ];
 
   const categoryTagMap = {
@@ -24,7 +24,9 @@
     '경찰서': ['#안전', '#치안', '#도움'],
     '흡연부스': ['#흡연', '#부스', '#휴식'],
     '공중 화장실': ['#화장실', '#편의', '#공공'],
-    '나만의 스팟': ['#나만의스팟', '#추천'],
+    '나만의 스팟': ['#공유스팟', '#공유'],
+    '모두의 스팟': ['#공유스팟', '#공유'],
+    '공유 스팟': ['#공유스팟', '#공유'],
   };
 
   function normalizeHashtags(raw) {
@@ -130,8 +132,14 @@
     ];
   }
 
+  function normalizeCategoryLabel(rawCategory) {
+    const normalized = String(rawCategory || '').trim();
+    if (normalized === '나만의 스팟' || normalized === '모두의 스팟') return '공유 스팟';
+    return normalized;
+  }
+
   function findCategoryMeta(item) {
-    const categoryText = String(item?.Category || item?.category || '');
+    const categoryText = normalizeCategoryLabel(item?.Category || item?.category || '');
     return categories.find((category) => category.key !== 'all' && categoryText.includes(category.label))
       || categories[0];
   }
@@ -152,6 +160,7 @@
     categories,
     categoryTagMap,
     createItem,
+    normalizeCategoryLabel,
     findCategoryMeta,
     resolveItemsByIndex,
     getAllBaseItems,
