@@ -14,11 +14,19 @@ App.pageMain = {
       App.pageMain.syncRegisterButtonState();
       App.pageMain.bindRankingWrapperClick();
       App.pageMain.bindBottomSheetClose();
+
+      // [v19 인증 상태 변경 보강]
+      // 초기 진입 시점의 인증 상태를 스냅샷으로 저장해 두고,
+      // 이후 로그인/로그아웃/재로그인/비밀번호 변경 로그아웃까지
+      // "상태가 실제로 바뀌었는지"를 비교하는 기준으로 사용한다.
+      App.pageMain.updateAuthStateSnapshot();
+
       await App.pageMain.renderDefaultMarkers();
       await App.pageRanking?.render?.();
     });
 
     App.pageMain.bindWindowMessages();
+    App.pageMain.bindAuthStateObservers();
   },
 
   createMap: () => {
@@ -104,12 +112,45 @@ App.pageMain = {
     }
   },
 
-  openRegisterModal: (lat, lng) => {
+  openRegisterModal: (lat, lng, options = {}) => {
     const modal = App.dom.qs('#register-modal');
     const iframe = App.dom.qs('#register-iframe');
     if (!modal || !iframe) return;
-    iframe.src = `register.html?lat=${lat}&lng=${lng}`;
+
+    const params = new URLSearchParams({
+      lat: String(lat ?? ''),
+      lng: String(lng ?? ''),
+    });
+
+    if (options.mode) params.set('mode', options.mode);
+    if (options.spotId) params.set('spotId', options.spotId);
+    if (options.source) params.set('source', options.source);
+    if (options.openInfo) params.set('openInfo', 'true');
+
+    iframe.src = `register.html?${params.toString()}`;
     modal.classList.remove('hidden');
+  },
+
+  openEditSpotModal: (spot, options = {}) => {
+    if (!spot || !App.spotApi.isOwnedByCurrentUser(spot)) {
+      App.pageMain.showToast('내가 등록한 장소만 수정할 수 있어요.');
+      return;
+    }
+
+    // [v24 수정 기능]
+    // 수정 모달은 기존 등록 모달을 재사용한다.
+    // 정보창에서 진입한 경우에는 먼저 바텀시트를 닫아 오버레이 겹침을 막는다.
+    App.state.activeEditingSpotId = App.spotApi.getSpotStableId(spot);
+    App.pageMain.closeBottomSheet();
+
+    window.requestAnimationFrame(() => {
+      App.pageMain.openRegisterModal(spot.latitude, spot.longitude, {
+        mode: 'edit',
+        spotId: App.state.activeEditingSpotId,
+        source: options.source || 'info',
+        openInfo: options.openInfo === true,
+      });
+    });
   },
 
   resetRegisterMode: () => {
@@ -128,6 +169,53 @@ App.pageMain = {
     App.state.map?.setCursor('default');
   },
 
+
+  getAuthStateSnapshot: () => {
+    // [v19 인증 상태 변경 보강]
+    // 단순 로그인 여부뿐 아니라 "누가 로그인했는지"까지 함께 본다.
+    // 그래야 A -> 로그아웃 -> B 로그인뿐 아니라
+    // A -> B 바로 재로그인처럼 사용자 자체가 바뀌는 경우도 감지할 수 있다.
+    const savedUser = App.storage.getSavedUser?.() || {};
+    const isLoggedIn = App.storage.isLoggedIn?.() === true;
+    const loginId = savedUser?.loginId || '';
+    return `${isLoggedIn ? '1' : '0'}::${loginId}`;
+  },
+
+  updateAuthStateSnapshot: () => {
+    App.state.lastAuthStateSnapshot = App.pageMain.getAuthStateSnapshot();
+  },
+
+  handleAuthStateChanged: async () => {
+    // [v19 인증 상태 변경 보강]
+    // 인증 상태가 바뀌면 현재 화면 문맥(검색/카테고리/태그)을 최대한 유지하면서
+    // 지도, 랭킹, 마이페이지 iframe을 함께 다시 맞춘다.
+    await App.pageMain.refreshVisibleMapStateAfterAuthChange();
+    await App.pageRanking?.render?.();
+    App.pageMain.refreshMypageFrame();
+    App.pageMain.updateAuthStateSnapshot();
+  },
+
+  bindAuthStateObservers: () => {
+    // [v19 인증 상태 변경 보강]
+    // postMessage가 빠지더라도 브라우저 포커스 복귀/탭 재활성화 시
+    // 실제 인증 상태 변화가 있었는지 다시 확인한다.
+    const checkAuthStateChange = async () => {
+      const previousSnapshot = App.state.lastAuthStateSnapshot || '';
+      const currentSnapshot = App.pageMain.getAuthStateSnapshot();
+
+      if (previousSnapshot === currentSnapshot) return;
+      await App.pageMain.handleAuthStateChanged();
+    };
+
+    App.dom.on(window, 'focus', checkAuthStateChange);
+    App.dom.on(document, 'visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        checkAuthStateChange();
+      }
+    });
+    App.dom.on(window, 'pageshow', checkAuthStateChange);
+  },
+
   renderDefaultMarkers: async () => {
     App.state.activeCategoryIndex = -1;
     App.state.activeTagFilter = "";
@@ -137,6 +225,60 @@ App.pageMain = {
     App.pageMain.clearMarkers({ preserveRegistered: false });
     const defaultItems = await App.spotApi.listDefaultVisibleSpots();
     App.pageMain.renderMarkers(defaultItems, { keepExisting: false, preserveRegistered: false, source: 'overview' });
+  },
+
+  /**
+   * [v18 인증 후 마커 갱신]
+   * 로그인/로그아웃 직후 현재 화면 문맥을 최대한 유지하면서
+   * 공개/비공개 정책이 다시 반영되도록 마커를 재계산한다.
+   *
+   * 중요:
+   * - 무조건 초기 화면으로 돌리지 않는다.
+   * - 현재 검색 / 태그 필터 / 카테고리 선택 상태를 우선 복원한다.
+   * - 그래야 기존 잘 되던 UX를 망가뜨리지 않고 권한만 갱신할 수 있다.
+   */
+  refreshVisibleMapStateAfterAuthChange: async () => {
+    App.pageMain.syncRegisterButtonState();
+    App.pageMain.closeBottomSheet();
+
+    // 1) "실제로 적용된 검색 상태"가 있을 때만 현재 검색 결과를 다시 계산한다.
+    // [v21 인증 갱신 보강]
+    // 입력창에 글자만 남아 있다고 해서 무조건 검색 상태로 보면,
+    // 로그인 직후 기본 마커 대신 예전 검색 결과가 계속 남아 있을 수 있다.
+    // 그래서 단순 input 값이 아니라 activeSearchKeyword 기준으로만 복원한다.
+    const activeSearchKeyword = String(App.state.activeSearchKeyword || '').trim();
+    if (activeSearchKeyword) {
+      const keywords = App.pageSearch.parseKeywords(activeSearchKeyword);
+      if (keywords.length) {
+        const results = await App.pageSearch.search(keywords);
+        App.pageSearch.applySearchResultsToMap(results);
+        return;
+      }
+    }
+
+    // 2) 태그 필터가 켜져 있으면 현재 사용자 기준으로 다시 필터링한다.
+    if (Array.isArray(App.state.activeTagFilters) && App.state.activeTagFilters.length) {
+      const items = await App.spotApi.filterSpotsByTag(App.state.activeTagFilters);
+      App.pageMain.renderMarkers(items, { source: 'tag' });
+      App.pageRanking?.syncFilterState?.();
+      return;
+    }
+
+    // 3) 카테고리 선택 중이면 같은 카테고리를 다시 렌더링한다.
+    if (typeof App.state.activeCategoryIndex === 'number' && App.state.activeCategoryIndex >= 0) {
+      if (App.state.activeCategoryIndex === 6 && !App.storage.isLoggedIn()) {
+        // '나만의 스팟' 상태에서 로그아웃한 경우는 기본 화면으로 안전하게 복귀한다.
+        await App.pageMain.renderDefaultMarkers();
+        await App.pageRanking?.render?.();
+        return;
+      }
+
+      await App.pageMain.handleCategorySelect(App.state.activeCategoryIndex, { keepActive: true });
+      return;
+    }
+
+    // 4) 별도 상태가 없으면 기본 공개/비공개 정책만 다시 반영한다.
+    await App.pageMain.renderDefaultMarkers();
   },
 
   bindWindowMessages: () => {
@@ -173,20 +315,37 @@ App.pageMain = {
         App.uiModal?.openFromMessage(payload);
         return;
       }
+      if (payload.type === App.const.messageType.OPEN_EDIT_SPOT) {
+        App.pageMain.openEditSpotModal(payload.data, {
+          source: payload.source || 'mypage',
+          openInfo: payload.openInfo === true,
+        });
+        return;
+      }
+      if (payload.type === App.const.messageType.UPDATE_SPOT) {
+        App.pageMain.closeBottomSheet();
+        await App.pageMain.refreshVisibleMapStateAfterSpotMutation();
+
+        if (payload.message) {
+          App.pageMain.showToast(payload.message);
+        }
+
+        if (payload.openInfo && payload.data && App.spotApi.canViewSpot(payload.data)) {
+          App.pageMain.focusSpotOnMap(payload.data);
+          await App.pageMain.openInfoSheet(payload.data);
+        }
+        return;
+      }
       if (payload.type === 'authChanged') {
-        App.pageMain.syncRegisterButtonState();
-        App.pageMain.refreshMypageFrame();
+        // [v19 인증 상태 변경 보강]
+        // 로그인 -> 로그아웃, 로그아웃 -> 로그인, A -> B 재로그인,
+        // 비밀번호 변경 후 세션 종료까지 모두 같은 "인증 상태 변경"으로 본다.
+        await App.pageMain.handleAuthStateChanged();
         return;
       }
       if (payload.type === App.const.messageType.SPOTS_CHANGED) {
         App.pageMain.closeBottomSheet();
-        App.pageMain.refreshMypageFrame();
-        if (App.state.activeCategoryIndex >= 0) {
-          await App.pageMain.handleCategorySelect(App.state.activeCategoryIndex, { keepActive: true });
-        } else {
-          await App.pageMain.renderDefaultMarkers();
-          await App.pageRanking?.render?.();
-        }
+        await App.pageMain.refreshVisibleMapStateAfterSpotMutation();
         if (payload.message) {
           App.pageMain.showToast(payload.message);
         }
@@ -196,6 +355,9 @@ App.pageMain = {
 
   handleCategorySelect: async (index, options = {}) => {
     const { keepActive = false } = options;
+    // [v21 인증 갱신 보강]
+    // 카테고리 선택은 검색 문맥을 끝내고 새 문맥으로 들어가는 동작이다.
+    App.state.activeSearchKeyword = '';
     App.state.activeTagFilter = '';
     App.state.activeTagFilters = [];
     App.pageRanking?.syncFilterState?.();
@@ -221,6 +383,9 @@ App.pageMain = {
   },
 
   clearSearchState: async () => {
+    // [v21 인증 갱신 보강]
+    // 검색 해제 시에는 입력값과 별개로 "실제로 적용된 검색 상태"도 함께 비운다.
+    App.state.activeSearchKeyword = '';
     await App.pageMain.renderDefaultMarkers();
   },
 
@@ -374,6 +539,7 @@ App.pageMain = {
       }
 
       const favoriteButton = contentNode.querySelector('#favorite-toggle');
+      const editButton = contentNode.querySelector('#edit-spot');
       const deleteButton = contentNode.querySelector('#delete-spot');
       const isOwnedSpot = App.spotApi.isOwnedByCurrentUser(item);
 
@@ -402,17 +568,34 @@ App.pageMain = {
         }
       }
 
+      if (editButton) {
+        if (!isOwnedSpot) {
+          editButton.classList.add('hidden');
+        } else {
+          editButton.classList.remove('hidden');
+          editButton.addEventListener('click', () => {
+            App.pageMain.openEditSpotModal(item, { source: 'info', openInfo: true });
+          });
+        }
+      }
+
       if (deleteButton) {
         if (!isOwnedSpot) {
           deleteButton.classList.add('hidden');
         } else {
           deleteButton.classList.remove('hidden');
           deleteButton.addEventListener('click', async () => {
-            const ok = window.confirm('내가 등록한 이 장소를 삭제할까요?');
+            const ok = await App.confirm.open({
+              title: '장소를 삭제할까요?',
+              message: '삭제 후 되돌릴 수 없어요.',
+              confirmText: '삭제',
+              cancelText: '취소',
+              danger: true,
+            });
             if (!ok) return;
             const result = await App.spotApi.deleteMySpot(item);
             if (!result.success) {
-              alert(result.message || '삭제하지 못했습니다.');
+              App.toast.show(result.message || '삭제하지 못했습니다.');
               return;
             }
             App.pageMain.closeBottomSheet();
@@ -601,6 +784,14 @@ App.pageMain = {
     if (frame?.contentWindow) {
       frame.contentWindow.location.reload();
     }
+  },
+
+  refreshVisibleMapStateAfterSpotMutation: async () => {
+    // [v24 수정 기능]
+    // 스팟 수정/삭제 이후에도 현재 화면 문맥(검색/태그/카테고리)을 최대한 유지한다.
+    await App.pageMain.refreshVisibleMapStateAfterAuthChange();
+    await App.pageRanking?.render?.();
+    App.pageMain.refreshMypageFrame();
   },
 
   toggleSidebar: () => {

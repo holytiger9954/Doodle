@@ -58,7 +58,7 @@ App.authApi = {
     // 따라서 여기서는 회원 목록(users)만 갱신하고,
     // 실제 로그인 상태는 login()에서만 바꾸도록 역할을 분리한다.
 
-    return { success: true, message: '회원가입이 완료되었습니다.' };
+    return { success: true, message: '회원가입이 완료되었습니다' };
   },
 
   /**
@@ -152,8 +152,15 @@ App.authApi = {
       App.storage.setSavedUser(updatedUser);
     }
 
-    // 기존 UX를 유지하기 위해 비밀번호 변경 후 재로그인을 요구한다.
-    App.storage.remove(App.storage.keys.login);
-    return { success: true, message: '비밀번호가 변경되었습니다.' };
+    // [v19 인증 상태 변경 보강]
+    // 비밀번호 변경 후에는 재로그인을 요구하므로,
+    // login 플래그만 지우지 말고 현재 세션 전체를 정리해야 한다.
+    // 그래야 savedUser가 남아서 owner/권한 계산이 꼬이는 일을 막을 수 있다.
+    App.storage.clearCurrentUserSession();
+    return {
+      success: true,
+      message: '비밀번호가 변경되었습니다',
+      requiresRelogin: true,
+    };
   },
 };

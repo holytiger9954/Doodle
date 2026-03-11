@@ -233,3 +233,59 @@
         padding: 11px 10px;
     }
 }
+
+
+/* [v14 검색 결과 UX 개선]
+   검색 결과 오버레이는 높이를 키우지 않고,
+   내부 결과 리스트만 스크롤되도록 고정한다. */
+.search-dropdown {
+    display: flex;
+    flex-direction: column;
+    max-height: 420px;
+}
+
+.search-result-list {
+    flex: 1 1 auto;
+    min-height: 0;
+    max-height: 320px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+.search-result-list::-webkit-scrollbar {
+    display: none;
+}
+
+.search-dropdown-footer {
+    display: flex;
+    justify-content: center;
+    padding: 8px 10px 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.search-more-btn {
+    width: 100%;
+    border: none;
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.search-more-btn:hover {
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.search-more-btn.hidden {
+    display: none;
+}
+
+.search-dropdown-footer.hidden {
+    display: none;
+}

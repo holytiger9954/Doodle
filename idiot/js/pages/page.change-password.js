@@ -56,23 +56,34 @@ App.pageChangePassword = {
         return;
       }
 
+      // [v20 인증 상태 변경 처리 보강]
+      // 비밀번호 변경 후 세션이 종료되면 로그아웃과 같은 권한 재계산이 즉시 일어나야 한다.
+      // changePassword 모달도 같은 창 위에서 열릴 수 있으므로,
+      // parent postMessage뿐 아니라 same-window 직접 갱신도 함께 처리한다.
+      if (window.parent && window.parent !== window) {
+        window.parent.postMessage({ type: 'authChanged', reason: 'passwordChangedLogout' }, '*');
+      } else if (App.pageMain?.handleAuthStateChanged) {
+        // [v21 인증 갱신 보강]
+        // 같은 창 모달 changePassword도 세션 종료 직후 한 프레임 뒤에 갱신한다.
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        await App.pageMain.handleAuthStateChanged();
+      } else if (App.pageMain?.refreshVisibleMapStateAfterAuthChange) {
+        await new Promise((resolve) => requestAnimationFrame(resolve));
+        await App.pageMain.refreshVisibleMapStateAfterAuthChange();
+        await App.pageRanking?.render?.();
+        App.pageMain.refreshMypageFrame?.();
+        App.pageMain.updateAuthStateSnapshot?.();
+      }
+
+      App.toast.show(result.message);
+
       if (App.uiModal) {
         App.uiModal.open('login');
         return;
       }
-      alert(result.message);
       location.href = './login.html';
     });
   },
 };
-
-function view(id) {
-  const password1 = document.getElementById(id);
-  if (password1.type === 'password' && password1.value.length > 0) {
-    password1.type = 'text';
-  } else if (password1.type === 'text' && password1.value.length > 0) {
-    password1.type = 'password';
-  }
-}
 
 document.addEventListener('DOMContentLoaded', () => App.pageChangePassword.init());

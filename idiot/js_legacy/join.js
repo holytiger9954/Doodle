@@ -47,7 +47,7 @@ joinform.addEventListener('submit', function (evt) {
     localStorage.setItem('savedPw', joinPw1.value);
     localStorage.setItem('savedNn', joinNn.value);
 
-    alert("회원가입이 완료되었습니다.")
+    alert("회원가입이 완료되었습니다")
     location.href = "./login.html"
 })
 // // [진짜 전송 시작!]// jemini.

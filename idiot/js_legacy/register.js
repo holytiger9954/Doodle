@@ -56,7 +56,7 @@ function bind() {
                         window.parent.postMessage('closeRegister', '*');
                     }
                 } else if (allInput) {
-                    alert('저장하실 위치의 정보를 정해주세요')
+                    alert('저장할 위치 정보를 입력해주세요')
                 }
             } else if (index === 1) {
                 alert('취소되었습니다')

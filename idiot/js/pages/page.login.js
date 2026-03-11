@@ -30,9 +30,28 @@ App.pageLogin = {
         if (App.uiModal) {
           App.uiModal.close();
         }
+
+        // [v20 인증 상태 변경 처리 보강]
+        // 로그인 모달은 메인 페이지 같은 창 위에서 열릴 수도 있고,
+        // iframe/서브창 안에서 열릴 수도 있다.
+        // 따라서 parent postMessage에만 의존하면 같은 창 모달 로그인에서는
+        // 마커/권한 상태가 즉시 갱신되지 않을 수 있다.
         if (window.parent && window.parent !== window) {
-          window.parent.postMessage({ type: 'authChanged' }, '*');
+          window.parent.postMessage({ type: 'authChanged', reason: 'login' }, '*');
+        } else if (App.pageMain?.handleAuthStateChanged) {
+          // [v21 인증 갱신 보강]
+          // 같은 창 모달 로그인에서는 모달이 닫힌 직후 한 프레임 뒤에 갱신해야
+          // 지도/오버레이 상태가 안정적으로 반영된다.
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          await App.pageMain.handleAuthStateChanged();
+        } else if (App.pageMain?.refreshVisibleMapStateAfterAuthChange) {
+          await new Promise((resolve) => requestAnimationFrame(resolve));
+          await App.pageMain.refreshVisibleMapStateAfterAuthChange();
+          await App.pageRanking?.render?.();
+          App.pageMain.refreshMypageFrame?.();
+          App.pageMain.updateAuthStateSnapshot?.();
         }
+
         if (App.pageMain?.refreshMypageFrame) {
           App.pageMain.refreshMypageFrame();
         }
@@ -46,14 +65,5 @@ App.pageLogin = {
     });
   },
 };
-
-function view(id) {
-  const password1 = document.getElementById(id);
-  if (password1.type === 'password' && password1.value.length > 0) {
-    password1.type = 'text';
-  } else if (password1.type === 'text' && password1.value.length > 0) {
-    password1.type = 'password';
-  }
-}
 
 document.addEventListener('DOMContentLoaded', () => App.pageLogin.init());

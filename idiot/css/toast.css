@@ -1,7 +1,0 @@
-.toast-page {
-    transition: all 1s;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    top: 0px;
-}

@@ -8,14 +8,15 @@ App.pageRegister = {
     titleInput: App.dom.qs('#title'),
     contentInput: App.dom.qs('.register-content'),
     hashtagInput: App.dom.qs('#hashtags'),
-    privateCheckbox: App.dom.qs('.register-private-btn'),
+    privateCheckbox: App.dom.qs('input.register-private-btn'),
     actionButtons: App.dom.qsa('.register-content-btn'),
   }),
 
   /** 초기화 */
-  init: () => {
+  init: async () => {
     const elements = App.pageRegister.getElements();
     App.pageRegister.applyCoordinatesFromQuery(elements);
+    await App.pageRegister.applyEditStateFromQuery(elements);
     App.pageRegister.bindButtons(elements);
   },
 
@@ -28,6 +29,50 @@ App.pageRegister = {
       elements.latitudeInput.value = lat;
       elements.longitudeInput.value = lng;
     }
+  },
+
+
+  getEditContextFromQuery: () => {
+    const params = new URLSearchParams(window.location.search);
+    return {
+      mode: params.get('mode') || 'create',
+      spotId: params.get('spotId') || '',
+      source: params.get('source') || 'map',
+      openInfo: params.get('openInfo') === 'true',
+    };
+  },
+
+  applyEditStateFromQuery: async (elements) => {
+    const editContext = App.pageRegister.getEditContextFromQuery();
+    App.state.registerEditContext = editContext;
+
+    if (editContext.mode !== 'edit' || !editContext.spotId) return;
+
+    const targetSpot = await App.spotApi.findUserSpotByIdentity(editContext.spotId);
+    if (!targetSpot) {
+      App.toast.show('수정할 장소를 찾지 못했습니다.');
+      App.message.postSimpleToParent(App.const.messageType.CLOSE_REGISTER);
+      return;
+    }
+
+    // [v24 수정 기능]
+    // 수정 모드에서는 기존 값으로 폼을 채우고,
+    // 위치(identity의 일부)는 변경하지 않도록 좌표 입력을 잠근다.
+    elements.categorySelect.value = targetSpot.Category || targetSpot.category || '나만의 스팟';
+    elements.latitudeInput.value = String(targetSpot.latitude ?? '');
+    elements.longitudeInput.value = String(targetSpot.longitude ?? '');
+    elements.latitudeInput.readOnly = true;
+    elements.longitudeInput.readOnly = true;
+    elements.titleInput.value = targetSpot.title || '';
+    elements.contentInput.value = targetSpot.description || '';
+    elements.hashtagInput.value = App.spotApi.normalizeHashtags(targetSpot.hashtags || []).join(' ');
+    elements.privateCheckbox.checked = App.spotApi.isPrivateSpot(targetSpot);
+
+    const submitButton = elements.actionButtons?.[0];
+    if (submitButton) {
+      submitButton.textContent = '수정';
+    }
+    document.title = '장소 수정';
   },
 
   parseHashtags: (raw = '') => App.spotApi.normalizeHashtags(raw),
@@ -100,19 +145,20 @@ App.pageRegister = {
           await App.pageRegister.handleSave(elements);
           return;
         }
-        alert('취소되었습니다');
+        App.toast.show('취소되었습니다');
         App.message.postSimpleToParent(App.const.messageType.CLOSE_REGISTER);
       });
     });
   },
 
   /**
-   * 등록 처리.
+   * 등록/수정 처리.
    *
    * 여기서는 입력값 수집만 하고,
    * 실제 저장 표준화(ownerId/private/category 보정 등)는 spot.api.js가 담당한다.
    */
   handleSave: async (elements) => {
+    const editContext = App.pageRegister.getEditContextFromQuery();
     const hasEmptyField = [
       elements.categorySelect.value,
       elements.latitudeInput.value,
@@ -122,7 +168,7 @@ App.pageRegister = {
     ].some((value) => !String(value).trim());
 
     if (hasEmptyField) {
-      alert('저장하실 위치의 정보를 정해주세요');
+      App.toast.show('저장할 위치 정보를 입력해주세요');
       return;
     }
 
@@ -130,34 +176,56 @@ App.pageRegister = {
     const longitude = Number(elements.longitudeInput.value);
     const hashtags = App.pageRegister.parseHashtags(elements.hashtagInput?.value || '');
 
-    // 좌표를 주소로 바꿔서 함께 저장한다.
-    // 주소 변환이 실패해도 저장은 계속 진행한다.
-    const resolvedAddress = await App.pageRegister.resolveAddressFromCoords(latitude, longitude);
+    // 수정 모드에서는 기존 주소를 그대로 유지하고,
+    // 등록 모드에서만 새 좌표를 주소로 변환해 저장한다.
+    const targetSpot = editContext.mode === 'edit'
+      ? await App.spotApi.findUserSpotByIdentity(editContext.spotId)
+      : null;
+
+    const resolvedAddress = targetSpot?.address
+      || await App.pageRegister.resolveAddressFromCoords(latitude, longitude);
+
+    const nextPrivate = Boolean(elements.privateCheckbox.checked);
 
     const spot = {
-      // 기존 백업 파일에서 title / Category 값이 뒤바뀔 수 있던 문제를 피하기 위해
-      // 등록 페이지에서는 title=내용, Category=선택 카테고리로 명확히 맞춘다.
       title: elements.titleInput?.value.trim(),
       description: elements.contentInput.value.trim(),
-      // 이전에는 빈 문자열로만 저장해서 상세창에서 항상 "주소 정보가 없습니다"가 보였다.
-      // 이제는 카카오 역지오코딩 결과를 저장해 검색/상세/마이페이지에서 재사용한다.
       address: resolvedAddress,
       latitude,
       longitude,
       Category: elements.categorySelect.value,
-      // 저장 시점 표준 필드는 private다.
-      // spot.api.js는 isPrivate도 호환하지만, 새 코드에서는 private를 쓰는 편이 더 읽기 쉽다.
-      private: Boolean(elements.privateCheckbox.checked),
+      private: nextPrivate,
       hashtags,
     };
+
+    if (editContext.mode === 'edit') {
+      const result = await App.spotApi.updateMySpot({
+        spotId: editContext.spotId,
+        ...spot,
+      });
+
+      if (!result?.success) {
+        App.toast.show(result?.message || '수정하지 못했습니다.');
+        return;
+      }
+
+      const updatedSpot = result?.data || spot;
+      App.toast.show(result.message || '정보가 수정되었습니다.');
+      App.message.postToParent(App.const.messageType.UPDATE_SPOT, {
+        data: updatedSpot,
+        source: editContext.source,
+        openInfo: editContext.openInfo,
+        message: result.message || '정보가 수정되었습니다.',
+      });
+      App.message.postSimpleToParent(App.const.messageType.CLOSE_REGISTER);
+      return;
+    }
 
     const result = await App.spotApi.saveUserSpot(spot);
     const savedSpot = result?.data || spot;
 
-    // 부모(main)에는 실제 저장 완료된 데이터를 보낸다.
-    // 그래야 ownerId / ownerNickname / createdAt / private 같은 표준 필드가 누락되지 않는다.
     App.message.postToParent(App.const.messageType.NEW_MARKER, { data: savedSpot });
-    alert(elements.privateCheckbox.checked ? '비공개 등록되었습니다' : '공개 등록되었습니다');
+    App.toast.show(elements.privateCheckbox.checked ? '비공개 등록되었습니다' : '공개 등록되었습니다');
     App.message.postSimpleToParent(App.const.messageType.CLOSE_REGISTER);
   },
 };

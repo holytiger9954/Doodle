@@ -63,6 +63,7 @@ App.spotApi = {
 
     const normalizedSpot = {
       ...spot,
+      spotKey: String(spot.spotKey || spot.id || `spot_${Date.now()}_${Math.random().toString(36).slice(2, 10)}`),
       title: String(spot.title || spot.content || '').trim(),
       description: String(spot.description || spot.content || spot.title || '').trim(),
       address: spot.address || '',
@@ -111,7 +112,7 @@ App.spotApi = {
   /** 특정 장소가 내 찜 목록에 있는지 확인 */
   isFavoriteSpot: async (spot) => {
     const favorites = await App.spotApi.listFavoriteSpots();
-    return favorites.some((item) => App.spotApi.getSpotIdentity(item) === App.spotApi.getSpotIdentity(spot));
+    return favorites.some((item) => App.spotApi.isSameSpot(item, spot));
   },
 
   /** 찜 토글 */
@@ -130,12 +131,13 @@ App.spotApi = {
 
     const favoriteMap = App.storage.getJson(App.storage.keys.favoriteSpotsByUser, {});
     const currentFavorites = favoriteMap[loginId] || [];
-    const spotId = App.spotApi.getSpotIdentity(spot);
-    const exists = currentFavorites.some((item) => App.spotApi.getSpotIdentity(item) === spotId);
+    const spotId = App.spotApi.getSpotStableId(spot);
+    const exists = currentFavorites.some((item) => App.spotApi.getSpotStableId(item) === spotId);
+    const normalizedSpot = { ...spot, spotKey: App.spotApi.getSpotStableId(spot) };
 
     favoriteMap[loginId] = exists
-      ? currentFavorites.filter((item) => App.spotApi.getSpotIdentity(item) !== spotId)
-      : [...currentFavorites, { ...spot }];
+      ? currentFavorites.filter((item) => App.spotApi.getSpotStableId(item) !== spotId)
+      : [...currentFavorites, normalizedSpot];
 
     App.storage.setJson(App.storage.keys.favoriteSpotsByUser, favoriteMap);
 
@@ -168,10 +170,10 @@ App.spotApi = {
 
     const targetId = typeof spotOrIdentity === 'string'
       ? spotOrIdentity
-      : App.spotApi.getSpotIdentity(spotOrIdentity);
+      : App.spotApi.getSpotStableId(spotOrIdentity);
 
     const spots = App.storage.getJson(App.storage.keys.userSpots, []);
-    const targetSpot = spots.find((spot) => App.spotApi.getSpotIdentity(spot) === targetId);
+    const targetSpot = spots.find((spot) => App.spotApi.getSpotStableId(spot) === targetId || App.spotApi.getSpotIdentity(spot) === targetId);
 
     if (!targetSpot) {
       return { success: false, message: '삭제할 장소를 찾지 못했습니다.' };
@@ -181,17 +183,114 @@ App.spotApi = {
       return { success: false, message: '내가 등록한 장소만 삭제할 수 있습니다.' };
     }
 
-    const nextSpots = spots.filter((spot) => App.spotApi.getSpotIdentity(spot) !== targetId);
+    const nextSpots = spots.filter((spot) => App.spotApi.getSpotStableId(spot) !== targetId && App.spotApi.getSpotIdentity(spot) !== targetId);
     App.storage.setJson(App.storage.keys.userSpots, nextSpots);
 
     // 삭제된 스팟이 다른 사용자의 찜 목록에 남아 있지 않도록 함께 정리한다.
     const favoriteMap = App.storage.getJson(App.storage.keys.favoriteSpotsByUser, {});
     Object.keys(favoriteMap).forEach((userId) => {
-      favoriteMap[userId] = (favoriteMap[userId] || []).filter((spot) => App.spotApi.getSpotIdentity(spot) !== targetId);
+      favoriteMap[userId] = (favoriteMap[userId] || []).filter((spot) => App.spotApi.getSpotStableId(spot) !== targetId && App.spotApi.getSpotIdentity(spot) !== targetId);
     });
     App.storage.setJson(App.storage.keys.favoriteSpotsByUser, favoriteMap);
 
     return { success: true, message: '삭제되었습니다.', removedSpot: targetSpot, removedSpotId: targetId };
+  },
+
+
+  /**
+   * 장소 식별키로 사용자 등록 스팟 1건을 찾는다.
+   *
+   * 등록 수정 모달에서 기존 데이터를 미리 채울 때 사용한다.
+   * 기본 제공 데이터는 수정 대상이 아니므로 userSpots 저장소에서만 찾는다.
+   */
+  findUserSpotByIdentity: async (spotIdentity = '') => {
+    const targetId = String(spotIdentity || '').trim();
+    if (!targetId) return null;
+    const spots = await App.spotApi.listUserSpots();
+    return spots.find((spot) => App.spotApi.getSpotStableId(spot) === targetId || App.spotApi.getSpotIdentity(spot) === targetId) || null;
+  },
+
+  /**
+   * 내가 등록한 스팟 수정.
+   *
+   * 수정 가능한 필드만 바꾸고, 스팟의 정체성에 가까운 값은 보존한다.
+   * - 유지: latitude / longitude / ownerId / ownerNickname / createdAt
+   * - 수정: title / description / Category / hashtags / private
+   */
+  updateMySpot: async (payload = {}) => {
+    if (App.config.apiMode === 'server') {
+      return App.http.request('/spots/mine', {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+    }
+
+    const loginId = App.storage.getCurrentLoginId();
+    if (!loginId) {
+      return { success: false, message: '로그인 후 이용할 수 있습니다.' };
+    }
+
+    const targetId = String(payload.spotId || '').trim();
+    if (!targetId) {
+      return { success: false, message: '수정할 장소를 찾지 못했습니다.' };
+    }
+
+    const spots = App.storage.getJson(App.storage.keys.userSpots, []);
+    const targetIndex = spots.findIndex((spot) => App.spotApi.getSpotStableId(spot) === targetId || App.spotApi.getSpotIdentity(spot) === targetId);
+
+    if (targetIndex === -1) {
+      return { success: false, message: '수정할 장소를 찾지 못했습니다.' };
+    }
+
+    const originalSpot = spots[targetIndex];
+    if (App.spotApi.getSpotOwnerId(originalSpot) !== loginId) {
+      return { success: false, message: '내가 등록한 장소만 수정할 수 있습니다.' };
+    }
+
+    const updatedSpot = {
+      ...originalSpot,
+      spotKey: originalSpot.spotKey || App.spotApi.getSpotStableId(originalSpot),
+      title: String(payload.title || originalSpot.title || '').trim(),
+      description: String(payload.description || originalSpot.description || '').trim(),
+      Category: payload.Category || payload.category || originalSpot.Category || originalSpot.category || '미분류',
+      category: payload.category || payload.Category || originalSpot.category || originalSpot.Category || '미분류',
+      hashtags: App.spotApi.normalizeHashtags(payload.hashtags ?? originalSpot.hashtags ?? []),
+      private: payload.private === true || payload.isPrivate === true,
+      // 주소/좌표/소유자/등록일은 유지
+      address: originalSpot.address || '',
+      latitude: Number(originalSpot.latitude),
+      longitude: Number(originalSpot.longitude),
+      ownerId: originalSpot.ownerId || loginId,
+      ownerNickname: originalSpot.ownerNickname || App.storage.getSavedUser()?.nickname || '게스트',
+      createdAt: originalSpot.createdAt,
+      updatedAt: new Date().toISOString(),
+    };
+
+    spots[targetIndex] = updatedSpot;
+    App.storage.setJson(App.storage.keys.userSpots, spots);
+
+    // 제목 변경 시 장소 식별키가 바뀔 수 있으므로
+    // 찜 목록에 저장된 동일 장소 객체도 함께 최신 값으로 치환한다.
+    const favoriteMap = App.storage.getJson(App.storage.keys.favoriteSpotsByUser, {});
+    Object.keys(favoriteMap).forEach((userId) => {
+      favoriteMap[userId] = (favoriteMap[userId] || []).map((favoriteSpot) => {
+        const sameStableId = App.spotApi.getSpotStableId(favoriteSpot) === targetId;
+        const sameLegacyIdentity = App.spotApi.getSpotIdentity(favoriteSpot) === targetId;
+        return (sameStableId || sameLegacyIdentity)
+          ? { ...updatedSpot }
+          : favoriteSpot;
+      });
+    });
+    App.storage.setJson(App.storage.keys.favoriteSpotsByUser, favoriteMap);
+
+    return {
+      success: true,
+      message: '정보가 수정되었습니다.',
+      data: updatedSpot,
+      previousSpotId: targetId,
+      nextSpotId: App.spotApi.getSpotStableId(updatedSpot),
+      nextSpotIdentity: App.spotApi.getSpotIdentity(updatedSpot),
+    };
   },
 
   /**
@@ -322,6 +421,23 @@ App.spotApi = {
     return `${title}::${lat}::${lng}`;
   },
 
+
+
+  /**
+   * 스팟의 안정 식별자.
+   *
+   * v24 수정 보강:
+   * 제목(title)은 수정 가능하므로 title+좌표 identity만으로는
+   * 수정/찜/삭제 추적이 흔들릴 수 있다.
+   * 그래서 저장 시 내부용 spotKey를 부여하고, 없으면 기존 identity로 폴백한다.
+   */
+  getSpotStableId: (spot = {}) => String(spot.spotKey || spot.id || App.spotApi.getSpotIdentity(spot)),
+
+  /** 두 스팟이 같은 내부 개체인지 비교 */
+  isSameSpot: (left = {}, right = {}) => (
+    App.spotApi.getSpotStableId(left) === App.spotApi.getSpotStableId(right)
+    || App.spotApi.getSpotIdentity(left) === App.spotApi.getSpotIdentity(right)
+  ),
   /**
    * 해시태그 정규화.
    *
@@ -335,11 +451,20 @@ App.spotApi = {
    */
   normalizeHashtags: (raw = '') => {
     if (Array.isArray(raw)) {
-      return [...new Set(raw.map((tag) => `#${String(tag).replace(/^#+/, '').trim()}`).filter((tag) => tag !== '#'))];
+      return [...new Set(raw
+        .flatMap((tag) => String(tag).split('#'))
+        .map((tag) => tag.trim())
+        .filter(Boolean)
+        .map((tag) => `#${tag.replace(/^#+/, '')}`)
+        .filter((tag) => tag !== '#'))];
     }
 
+    // [v9 해시태그 수정] 공백/쉼표뿐 아니라 붙여 쓴 #태그도 안정적으로 분리한다.
+    // 예: "#카페#데이트 #맛집" -> ["#카페", "#데이트", "#맛집"]
     return [...new Set(String(raw)
-      .split(/[\s,]+/)
+      .split('#')
+      .map((tag) => tag.trim())
+      .flatMap((tag) => tag.split(/[\s,]+/))
       .map((tag) => tag.trim())
       .filter(Boolean)
       .map((tag) => `#${tag.replace(/^#+/, '')}`)

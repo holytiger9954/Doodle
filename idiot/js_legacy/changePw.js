@@ -53,7 +53,7 @@ changeform.addEventListener('submit', function (evt) {
     if ( savedId === changeId.value && savedPw === changePw.value) {
         localStorage.setItem('savedPw', changePw2.value);
         localStorage.removeItem('login')
-        alert("비밀번호가 변경되었습니다.")
+        alert("비밀번호가 변경되었습니다")
         location.href = "./login.html"
     } else {
         woPw2.innerHTML = `변경하려는 아이디 혹은 비밀번호가 잘못되었습니다.<br>다시 확인 바랍니다.`;

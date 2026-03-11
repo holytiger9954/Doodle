@@ -316,3 +316,10 @@
 #info-link[aria-expanded="true"] {
     background-color: #29456f !important;
 }
+
+
+#edit-spot {
+    background-color: rgba(3, 196, 240, 0.12) !important;
+    color: var(--main-blue);
+    border: 1px solid rgba(3, 196, 240, 0.28);
+}

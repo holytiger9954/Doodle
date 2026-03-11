@@ -60,8 +60,24 @@ App.pageMypage = {
     App.dom.setText(elements.authDesc, '찜한 장소와 내가 등록한 장소만 따로 모아볼 수 있어요.');
     App.dom.setText(elements.authPrimaryButton, '로그아웃');
     App.dom.setText(elements.authSecondaryButton, '비밀번호 변경');
-    elements.authPrimaryButton.onclick = () => {
+    elements.authPrimaryButton.onclick = async () => {
+      const ok = await App.confirm.open({
+        title: '로그아웃할까요?',
+        message: '찜 목록과 내 장소 관리를 마치고 현재 계정에서 로그아웃합니다.',
+        confirmText: '로그아웃',
+        cancelText: '취소',
+      });
+      if (!ok) return;
+
       App.authApi.logout();
+      App.toast.show('로그아웃되었습니다.');
+      // [v18 인증 후 마커 갱신]
+      // 부모(main) 화면이 있다면 로그아웃 직후 마커/권한 상태를 즉시 다시 계산하게 알린다.
+      if (window.parent && window.parent !== window) {
+        // [v19 인증 상태 변경 보강]
+        // 마이페이지 로그아웃도 일반 로그아웃과 동일하게 부모 화면 재계산 신호를 보낸다.
+        window.parent.postMessage({ type: 'authChanged', reason: 'logout' }, '*');
+      }
       App.pageMypage.renderAuthState(elements);
     };
     elements.authSecondaryButton.onclick = () => {

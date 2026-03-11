@@ -84,17 +84,37 @@ App.uiMarkerPanel = {
             <p>${item.title}</p>
             <span class="box-sub">${item.address || '주소 정보 없음'}</span>
           </div>
-          <button type="button" class="box-delete" aria-label="장소 삭제">삭제</button>
+          <div class="box-actions">
+            <button type="button" class="box-edit" aria-label="장소 수정">수정</button>
+            <button type="button" class="box-delete" aria-label="장소 삭제">삭제</button>
+          </div>
         `;
 
+        const editButton = box.querySelector('.box-edit');
         const deleteButton = box.querySelector('.box-delete');
+
+        App.dom.on(editButton, 'click', (event) => {
+          event.stopPropagation();
+          App.message.postToParent(App.const.messageType.OPEN_EDIT_SPOT, {
+            data: item,
+            source: 'mypage',
+            openInfo: false,
+          });
+        });
+
         App.dom.on(deleteButton, 'click', async (event) => {
           event.stopPropagation();
-          const ok = window.confirm('내가 등록한 이 장소를 삭제할까요?');
+          const ok = await App.confirm.open({
+            title: '장소를 삭제할까요?',
+            message: '삭제 후 되돌릴 수 없어요.',
+            confirmText: '삭제',
+            cancelText: '취소',
+            danger: true,
+          });
           if (!ok) return;
           const result = await App.spotApi.deleteMySpot(item);
           if (!result.success) {
-            alert(result.message || '삭제하지 못했습니다.');
+            App.toast.show(result.message || '삭제하지 못했습니다.');
             return;
           }
           const nextItems = await App.uiMarkerPanel.resolvePanelItems(panelKey);
